@@ -1,5 +1,6 @@
 ﻿# Float32AVR
-Floating Point routines for AVR MCUs.
+Floating-point routines for AVR MCUs.
+Partially compliant with IEEE 754.
 
 ## FADD32 flowchart
 ![](docs/flowchart_fadd.png)
