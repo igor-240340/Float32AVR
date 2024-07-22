@@ -1,4 +1,4 @@
-﻿# Float32AVR - AVR Floating-Point Library
+﻿# Float32AVR
 
 ## Overview
 
