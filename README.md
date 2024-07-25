@@ -42,3 +42,5 @@ An auxiliary repository with test examples is available [here](https://github.co
 ![](docs/flowchart_fdiv.png)
 ### FTOA
 ![](docs/flowchart_ftoa.png)
+### ATOF
+![](docs/flowchart_atof.png)
