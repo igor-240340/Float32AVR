@@ -1629,7 +1629,7 @@ GETINT1:    LD R16,X+                   ; R16=DIGIT=*STR++.
             RJMP GETINT1
 
             ;
-            ; ВЫХОДИ ИЗ ATOF.
+            ; ВЫХОДИМ ИЗ ATOF.
 EXITATOF:   CLR R16                     ;
             OR R16,A0                   ;
             OR R16,A1                   ;
