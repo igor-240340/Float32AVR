@@ -28,8 +28,8 @@ An auxiliary repository with test examples is available [here](https://github.co
 - **FADD32/FSUB32**: Addition/subtraction.
 - **FMUL32**: Multiplication.
 - **FDIV32**: Division.
-- **FTOA**: Converts float to ASCII string (uses a simple algorithm that generally does not provide the best approximations).
-- **ATOF**: Converts ASCII string to float (uses a simple algorithm that generally does not provide the best approximations).
+- **FTOAN**: Converts float to ASCII string (supports only normalized decimal numbers, uses a simple algorithm that does not generally provide the best approximation).
+- **ATOF**: Converts ASCII string to float (uses a simple algorithm that does not generally provide the best approximation).
 - **FTOI**: Converts from float to int (intended for internal use by the library only, currently limited to integers with a size of 1 byte).
 - **ITOF**: Converts from int to float (intended for internal use by the library only, currently limited to integers with a size of 1 byte).
 
@@ -40,7 +40,7 @@ An auxiliary repository with test examples is available [here](https://github.co
 ![](docs/flowchart_fmul.png)
 ### FDIV32
 ![](docs/flowchart_fdiv.png)
-### FTOA
-![](docs/flowchart_ftoa.png)
+### FTOAN
+![](docs/flowchart_ftoan.png)
 ### ATOF
 ![](docs/flowchart_atof.png)
