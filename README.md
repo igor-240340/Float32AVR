@@ -4,7 +4,7 @@
 
 This library provides floating-point routines with single precision for AVR microcontrollers. It has been built entirely from the ground up, with all floating-point algorithms developed based on fundamental binary arithmetic principles.
 
-The main goal of this library is not for production use but rather for educational purposes, allowing users to understand and experiment with floating-point arithmetic. This library can be easily ported to any microcontroller unit (MCU).
+The main goal of this library is not for production use but rather for educational purposes, allowing users to understand and experiment with floating-point arithmetic. This library can be easily ported to any microcontroller.
 
 ## IEEE 754 Compliance
 
@@ -29,6 +29,7 @@ An auxiliary repository with test examples is available [here](https://github.co
 - **FMUL32**: Multiplication.
 - **FDIV32**: Division.
 - **FTOAN**: Converts float to ASCII string (supports only normalized decimal numbers, uses a simple algorithm that does not generally provide the best approximation).
+- **FTOAE**: Converts float to ASCII string in exponential format (it depends on FTOAN).
 - **ATOF**: Converts ASCII string to float (uses a simple algorithm that does not generally provide the best approximation).
 - **FTOI**: Converts from float to int (intended for internal use by the library only, currently limited to integers with a size of 1 byte).
 - **ITOF**: Converts from int to float (intended for internal use by the library only, currently limited to integers with a size of 1 byte).
@@ -42,5 +43,7 @@ An auxiliary repository with test examples is available [here](https://github.co
 ![](docs/flowchart_fdiv.png)
 ### FTOAN
 ![](docs/flowchart_ftoan.png)
+### FTOAE
+![](docs/flowchart_ftoae.png)
 ### ATOF
 ![](docs/flowchart_atof.png)
