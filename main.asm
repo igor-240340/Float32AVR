@@ -1355,10 +1355,17 @@ MAIN:
 
             ;
             ; ПРИМЕР 10.
-            LDI R16,0xF2                    ; A=1.3023970127105712890625F * 2^-34.
-            LDI R17,0xB4
-            LDI R18,0xA6
-            LDI R19,0x2E
+;            LDI R16,0xF2                    ; A=1.3023970127105712890625F * 2^-34.
+;            LDI R17,0xB4
+;            LDI R18,0xA6
+;            LDI R19,0x2E
+
+            ;
+            ; ПРИМЕР 11.
+            LDI R16,0x00                    ; A=0.0F.
+            LDI R17,0x00
+            LDI R18,0x00
+            LDI R19,0x00
             
             LDI R20,16                      ; MAXLEN.
             MOV R12,R20
