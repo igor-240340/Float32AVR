@@ -6,7 +6,7 @@ This library provides floating-point routines with single precision for AVR micr
 
 The main goal of this library is not for production use but rather for educational purposes, allowing users to understand and experiment with floating-point arithmetic. This library can be easily ported to any microcontroller.
 
-"It is used in the 'Hardware Calculator from Scratch' project, which can be found in [this](https://github.com/igor-240340/HardwareCalculatorFromScratch) repository."
+It is used in the 'Hardware Calculator from Scratch' project, which can be found in [this](https://github.com/igor-240340/HardwareCalculatorFromScratch) repository.
 
 ## IEEE 754 Compliance
 
