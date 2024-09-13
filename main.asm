@@ -46,15 +46,15 @@ MAIN:
 ;===========================================================================================
             ;
             ; СЛУЧАЙ 1.         
-            LDI R16,0x00                    ; A=1.0F.
-            LDI R17,0x00
-            LDI R18,0x80
-            LDI R19,0x3F
+;            LDI R16,0x00                    ; A=1.0F.
+;            LDI R17,0x00
+;            LDI R18,0x80
+;            LDI R19,0x3F
 
-            LDI R20,0xFF                    ; B=1.99999988079071044921875F.
-            LDI R21,0xFF
-            LDI R22,0xFF
-            LDI R23,0x3F
+;            LDI R20,0xFF                    ; B=1.99999988079071044921875F.
+;            LDI R21,0xFF
+;            LDI R22,0xFF
+;            LDI R23,0x3F
 
             ;
             ; СЛУЧАЙ 2.         
@@ -328,15 +328,15 @@ MAIN:
 ;===========================================================================================
             ;
             ; СЛУЧАЙ 1.
-;            LDI R16,0x00                    ; A=1.875F.
-;            LDI R17,0x00
-;            LDI R18,0xF0
-;            LDI R19,0x3F
+            LDI R16,0x00                    ; A=1.875F.
+            LDI R17,0x00
+            LDI R18,0xF0
+            LDI R19,0x3F
 
-;            LDI R20,0x00                    ; B=1.5F.
-;            LDI R21,0x00
-;            LDI R22,0xC0
-;            LDI R23,0x3F
+            LDI R20,0x00                    ; B=1.5F.
+            LDI R21,0x00
+            LDI R22,0xC0
+            LDI R23,0x3F
 
             ;
             ; СЛУЧАЙ 2.
@@ -1151,8 +1151,8 @@ MAIN:
             LDD R14,Y+7
             LDD R15,Y+8
 
-            CALL FDIV32
-;            CALL FMUL32
+;            CALL FDIV32
+            CALL FMUL32
 ;            CALL FADD32
 ;            CALL FSUB32
 
