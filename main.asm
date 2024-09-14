@@ -328,15 +328,15 @@ MAIN:
 ;===========================================================================================
             ;
             ; СЛУЧАЙ 1.
-            LDI R16,0x00                    ; A=1.875F.
-            LDI R17,0x00
-            LDI R18,0xF0
-            LDI R19,0x3F
+;            LDI R16,0x00                    ; A=1.875F.
+;            LDI R17,0x00
+;            LDI R18,0xF0
+;            LDI R19,0x3F
 
-            LDI R20,0x00                    ; B=1.5F.
-            LDI R21,0x00
-            LDI R22,0xC0
-            LDI R23,0x3F
+;            LDI R20,0x00                    ; B=1.5F.
+;            LDI R21,0x00
+;            LDI R22,0xC0
+;            LDI R23,0x3F
 
             ;
             ; СЛУЧАЙ 2.
@@ -834,15 +834,15 @@ MAIN:
 
             ;
             ; СЛУЧАЙ 36.
-;            LDI R16,0x00                    ; A=1.9921875F * 2^100.
-;            LDI R17,0x00
-;            LDI R18,0xFF
-;            LDI R19,0x71
+            LDI R16,0x00                    ; A=1.9921875F * 2^100.
+            LDI R17,0x00
+            LDI R18,0xFF
+            LDI R19,0x71
 
-;            LDI R20,0x80                    ; B=1.9999847412109375F * 2^92.
-;            LDI R21,0xFF
-;            LDI R22,0xFF
-;            LDI R23,0x6D
+            LDI R20,0x80                    ; B=1.9999847412109375F * 2^92.
+            LDI R21,0xFF
+            LDI R22,0xFF
+            LDI R23,0x6D
 
             ;
             ; СЛУЧАЙ 40.
@@ -1152,8 +1152,8 @@ MAIN:
             LDD R15,Y+8
 
 ;            CALL FDIV32
-            CALL FMUL32
-;            CALL FADD32
+;            CALL FMUL32
+            CALL FADD32
 ;            CALL FSUB32
 
             STD Y+9,R8                      ; ЗАПИСЫВАЕМ РЕЗУЛЬТАТ В ПАМЯТЬ.
