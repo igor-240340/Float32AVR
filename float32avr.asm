@@ -1,84 +1,84 @@
 ;
-; Float32AVR - библиотека подпрограмм для работы с числами в формате бинарной плавающей точки одинарной точности.
-; Кроме арифметики содержит вспомогательные подпрограммы для конвертации из ASCII и в ASCII.
+; Float32AVR - a subroutine library for working with numbers in single-precision binary floating-point format.
+; In addition to arithmetic, it includes auxiliary subroutines for conversion from and to ASCII.
 ;
-; Copyright (с) 2024 Igor Voytenko <igor.240340@gmail.com>
+; Copyright (c) 2024 Igor Voytenko <igor.240340@gmail.com>
 ;
-; Частичная совместимость с IEEE 754:
-; - Не реализованы спец. значения: inf, nan.
-; - Не реализованы денормализованные числа.
-; - Реализован только один режим округления: к ближайшему/к четному.
-; - Реализован только положительный ноль.
+; Partial compliance with IEEE 754:
+; - Special values (inf, nan) are not implemented.
+; - Denormalized numbers are not implemented.
+; - Only one rounding mode is implemented: to nearest/even.
+; - Only positive zero is implemented.
 ;
-; Тем не менее, граничные значения экспоненты -127 и 128 (0 и 255 в коде со смещением)
-; остаются зарезервированными для спец. значений и денормализованных чисел
-; чтобы можно было довести до полной совместимости в будущем
-; а также для удобства тестирования и сравнения с эталонной IEEE 754 реализацией прямо сейчас.
+; Nevertheless, the exponent boundary values of -127 and 128 (0 and 255 for biased exponent)
+; remain reserved for special values and denormalized numbers
+; to allow for full compatibility in the future
+; and for ease of testing and comparison with the reference IEEE 754 implementation right now.
 ;
-; Обработка исключительных ситуаций.
-; В случае возникновения исключительной ситуации (деление на ноль, переполнение)
-; происходит прыжок на адрес, который должен быть предварительно загружен в z-регистр перед вызовом подпрограммы.
+; Exception handling.
+; In case of an exceptional situation (division by zero, overflow),
+; a jump is made to an address that must be preloaded into the Z-register before calling a subroutine.
             ;
-            ; Байты исходной мантиссы делимого,
-            ; расширенные GUARD-байтом для безопасного сдвига влево.
-            .DEF MANTA0=R8              
-            .DEF MANTA1=R9              
-            .DEF MANTA2=R10             
-            .DEF MANTAG=R2              
+            ; Bytes of the dividend's original mantissa,
+            ; extended with a GUARD byte for safe left shifting.
+            .DEF MANTA0=R8
+            .DEF MANTA1=R9
+            .DEF MANTA2=R10
+            .DEF MANTAG=R2
 
             ;
-            ; Байты исходной мантиссы делителя,
-            ; Расширенные GUARD-байтом для формирования доп. кода отрицательной мантиссы.
-            .DEF MANTB0=R12             
-            .DEF MANTB1=R13             
-            .DEF MANTB2=R14             
-            .DEF MANTBG=R3              
+            ; Bytes of the divisor's original mantissa,
+            ; extended with a GUARD byte for forming the two's complement of a negative mantissa.
+            .DEF MANTB0=R12
+            .DEF MANTB1=R13
+            .DEF MANTB2=R14
+            .DEF MANTBG=R3
 
             ;
-            ; Байты доп. кода отрицательной мантиссы делителя.
+            ; Bytes of the two's complement of the divisor's negative mantissa.
             .DEF MANTB0NEG=R4
             .DEF MANTB1NEG=R5
             .DEF MANTB2NEG=R6
             .DEF MANTBGNEG=R7
 
             ;
-            ; Расширенные экспоненты.
-            .DEF EXPA0=R11                  ; Первый операнд.
+            ; Extended exponents.
+            .DEF EXPA0=R11                  ; First operand.
             .DEF EXPA1=R20                  ;
-            .DEF EXPR0=R11                  ; Результат.
+            .DEF EXPR0=R11                  ; Result.
             .DEF EXPR1=R20                  ;
-            .DEF EXPB0=R15                  ; Второй операнд.
+            .DEF EXPB0=R15                  ; Second operand.
             .DEF EXPB1=R21                  ;
 
             ;
-            ; Байты мантиссы частного.
+            ; Bytes of the quotient's mantissa.
             .DEF Q0=R22
             .DEF Q1=R23
             .DEF Q2=R24
             .DEF Q3=R25
 
-            .EQU QDIGITS=24+2               ; Количество цифр частного к вычислению: 24 + R + G + S (S определяется вне цикла).
+            .EQU QDIGITS=24+2               ; Number of digits of the quotient to calculate: 24 + R + G + S (S is determined outside the loop).
 
-            .DEF STEPS=R17                  ; Счетчик цикла.
+            .DEF STEPS=R17                  ; Loop counter.
 
-            .EQU RGSMASK=0b00000111         ; Маска для извлечения rgs-битов при округлении.
-            .DEF RGSBITS=R18                ; Дополнительные биты мантиссы частного + sticky-бит для корректного округления.
+            .EQU RGSMASK=0b00000111         ; Mask for extracting RGS bits during rounding.
+            .DEF RGSBITS=R18                ; Additional bits of the quotient's mantissa + STICKY bit for correct rounding.
 
-            .DEF RSIGN=R0                   ; Знак результата (частное/произведение/алгебраическая сумма).
+            .DEF RSIGN=R0                   ; Sign of the result (quotient/product/algebraic sum).
 
             ;
-            ; Мантисса произведения.
+            ; Mantissa of the product.
             .DEF MANTP0=R17
             .DEF MANTP1=R18
             .DEF MANTP2=R19
             .DEF MANTP3=R23
             .DEF MANTP4=R24
             .DEF MANTP5=R25
-            .DEF GUARD=R7                  ; GUARD-регистр для временного хранения R-бита мантиссы произведения.
+            .DEF GUARD=R7                  ; GUARD register for temporarily storing the R bit of the product's mantissa.
 
-            .DEF STATUS0=R5                ; Регистр статуса после операции над младшим байтом.
-            .DEF STATUS1=R6                ; Регистр статуса после операции над старшим байтом.
-            .DEF SREGACC=R17               ; Регистр статуса после нескольких операций. например, побитовое и регистра status.
+            .DEF STATUS0=R5                ; STATUS register after operation on the least significant byte.
+            .DEF STATUS1=R6                ; STATUS register after operation on the most significant byte.
+            .DEF SREGACC=R17               ; Status register after multiple operations. For example, bitwise AND of the STATUS register.
 
 ;
 ; Делит два числа по схеме с неподвижным делителем без восстановления остатка.
