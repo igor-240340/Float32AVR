@@ -81,61 +81,61 @@
             .DEF SREGACC=R17               ; Status register after multiple operations. For example, bitwise AND of the STATUS register.
 
 ;
-; Делит два числа по схеме с неподвижным делителем без восстановления остатка.
+; Divides two numbers using a non-restoring division algorithm with a fixed divisor.
 ;
-; Делимое ожидается в регистрах: R11, R10, R9, R8.
-; Делитель ожидается в регистрах: R15, R14, R13, R12. 
-; Частное помещается на место делимого: R11, R10, R9, R8.
+; The dividend is expected in registers: R11, R10, R9, R8.
+; The divisor is expected in registers: R15, R14, R13, R12. 
+; The quotient is placed in the dividend's location: R11, R10, R9, R8.
 FDIV32:     ;
-            ; Фильтрация операндов.
+            ; Operand filtering.
             CLR R16                     ;
             OR R16,R12                  ;
             OR R16,R13                  ;
             OR R16,R14                  ;
             OR R16,R15                  ;
             IN R16,SREG                 ; 
-            SBRC R16,SREG_Z             ; Делитель равен нулю?
-            IJMP                        ; Да, выбрасываем ошибку. Делимое при этом может быть как нулевым так и ненулевым - оба варианта некорректны.
+            SBRC R16,SREG_Z             ; Is the divisor zero?
+            IJMP                        ; Yes, throw an error. The dividend can be either zero or non-zero - both cases are invalid.
 
-            CLR R16                     ; Нет, проверяем делимое.
+            CLR R16                     ; No, check the dividend.
             OR R16,R8                   ;
             OR R16,R9                   ;
             OR R16,R10                  ;
             OR R16,R11                  ;
             IN R16,SREG                 ;
-            SBRC R16,SREG_Z             ; Делимое равно нулю?
-            RJMP SETZERO                ; Да, возвращаем ноль.
-                                        ; Нет, оба операнда ненулевые, вычисляем частное.
+            SBRC R16,SREG_Z             ; Is the dividend zero?
+            RJMP SETZERO                ; Yes, return zero.
+                                        ; No, both operands are non-zero; calculate the quotient.
             
             ;
-            ; Определение знака частного.
-            MOV RSIGN,R11               ; Копируем старший байт делимого.
-            MOV R1,R15                  ; Копируем старший байт делителя.
-            LDI R16,0b10000000          ; Загружаем маску знака.
-            AND RSIGN,R16               ; Извлекаем знак делимого.
-            AND R1,R16                  ; Извлекаем знак делителя.
-            EOR RSIGN,R1                ; Определяем знак частного.
+            ; Determining the sign of the quotient.
+            MOV RSIGN,R11               ; Copy the most significant byte of the dividend.
+            MOV R1,R15                  ; Copy the most significant byte of the divisor.
+            LDI R16,0b10000000          ; Load the sign mask.
+            AND RSIGN,R16               ; Extract the sign of the dividend.
+            AND R1,R16                  ; Extract the sign of the divisor.
+            EOR RSIGN,R1                ; Determine the sign of the quotient.
 
             ;
-            ; Распаковка делимого.
-            ROL R10                     ; MSB мантиссы делимого содержит lsb экспоненты. Сдвигаем его в бит переноса.
-            ROL R11                     ; Избавляемся от знака делимого и восстанавливаем младший бит экспоненты.
-            ROR R10                     ; Возвращаем на место старший байт мантиссы делимого.
-            OR R10,R16                  ; Восстанавливаем скрытую единицу мантиссы.
+            ; Unpacking the dividend.
+            ROL R10                     ; The MSB of the dividend's mantissa contains the LSB of the exponent. Shift it to the carry bit.
+            ROL R11                     ; Remove the sign of the dividend and restore the least significant bit of the exponent.
+            ROR R10                     ; Return the most significant byte of the dividend's mantissa to its place.
+            OR R10,R16                  ; Restore the hidden bit of the mantissa.
 
             ;
-            ; Распаковка делителя.
-            ROL R14                     ; То же самое для делителя.
+            ; Unpacking the divisor.
+            ROL R14                     ; The same applies to the divisor.
             ROL R15                     ; 
             ROR R14                     ; 
             OR R14,R16                  ;
 
             ;
-            ; Вычисление экспоненты частного.
+            ; Calculating the exponent of the quotient.
             CLR EXPA1
             CLR EXPB1
             
-            COM EXPB0                   ; Формируем доп. код экспоненты делителя.
+            COM EXPB0                   ; Generate the two's complement of the divisor's exponent.
             COM EXPB1                   ;
             LDI R16,1                   ; 
             ADD EXPB0,R16               ; 
@@ -144,37 +144,37 @@ FDIV32:     ;
 
             ADD EXPA0,EXPB0             ; EXPA=EXPA-EXPB.
             ADC EXPA1,EXPB1             ;
-            LDI R16,127                 ; Восстанавливаем результат в коде со смещением.
+            LDI R16,127                 ; Make the exponent of the quotient biased.
             ADD EXPA0,R16               ; 
             LDI R16,0                   ;
             ADC EXPA1,R16               ;
             
             ;
-            ; Формирование доп. кода мантиссы делителя.
+            ; Generating the two's complement of the divisor's mantissa.
             CLR MANTAG                  ;
             CLR MANTBG                  ;
 
-            MOV MANTB0NEG,MANTB0        ; Копируем положительную мантиссу делителя.
+            MOV MANTB0NEG,MANTB0        ; Copy the positive mantissa of the divisor.
             MOV MANTB1NEG,MANTB1        ;
             MOV MANTB2NEG,MANTB2        ;
             MOV MANTBGNEG,MANTBG        ;
 
-            COM MANTB0NEG               ; Поскольку 2^N-|B|=(2^N-1-|B|)+1=COM(|B|)+1,
-            COM MANTB1NEG               ; то инвертируем биты положительной мантиссы
+            COM MANTB0NEG               ; Since 2^N-|B|=(2^N-1-|B|)+1=COM(|B|)+1,
+            COM MANTB1NEG               ; invert the bits of the positive mantissa
             COM MANTB2NEG               ;
             COM MANTBGNEG               ;
 
-            LDI R16,1                   ; и прибавляем единицу,
-            ADD MANTB0NEG,R16           ; не забывая про возможное появление бита переноса.
+            LDI R16,1                   ; and add one,
+            ADD MANTB0NEG,R16           ; not forgetting the potential carry bit.
             LDI R16,0                   ;
             ADC MANTB1NEG,R16           ; 
             ADC MANTB2NEG,R16           ; 
             ADC MANTBGNEG,R16           ;
 
             ;
-            ; Вычисление мантиссы частного.
-            LDI STEPS,QDIGITS           ; Количество шагов равно количеству вычисляемых цифр частного.
-            CLR Q0                      ; Зануляем мантиссу частного.
+            ; Calculating the mantissa of the quotient.
+            LDI STEPS,QDIGITS           ; The number of steps equals the number of computed digits of the quotient.
+            CLR Q0                      ; Zero the mantissa of the quotient.
             CLR Q1                      ;
             CLR Q2                      ;
             CLR Q3                      ;
