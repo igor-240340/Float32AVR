@@ -179,43 +179,43 @@ FDIV32:     ;
             CLR Q2                      ;
             CLR Q3                      ;
 
-SUBMANTB:   ADD MANTA0,MANTB0NEG        ; Вычитаем из мантиссы делимого или остатка
-            ADC MANTA1,MANTB1NEG        ; мантиссу делителя,
-            ADC MANTA2,MANTB2NEG        ; умноженную на вес
-            ADC MANTAG,MANTBGNEG        ; очередной цифры частного.
+SUBMANTB:   ADD MANTA0,MANTB0NEG        ; Subtract from the mantissa of the dividend or remainder
+            ADC MANTA1,MANTB1NEG        ; the mantissa of the divisor,
+            ADC MANTA2,MANTB2NEG        ; multiplied by the weight
+            ADC MANTAG,MANTBGNEG        ; of the corresponding digit of the quotient.
 
 CALCDIGIT:  IN R16,SREG                 ;
-            SBRS R16,SREG_N             ; Остаток отрицательный?
-            SBR Q0,1                    ; Нет, устанавливаем текущую цифру частного в 1.
+            SBRS R16,SREG_N             ; Is the remainder negative?
+            SBR Q0,1                    ; No, set the current digit of the quotient to 1.
 
-            DEC STEPS                   ; Вычислены все цифры частного?
-            BREQ RESTPOSREM             ; Да, восстанавливаем последний положительный остаток.
+            DEC STEPS                   ; Are all digits of the quotient calculated?
+            BREQ RESTPOSREM             ; Yes, restore the last positive remainder.
 
-            CLC                         ; Освобождаем и зануляем LSB для следующей цифры частного.
+            CLC                         ; Clear and zero the LSB for the next digit of the quotient.
             ROL Q0                      ;
             ROL Q1                      ; 
             ROL Q2                      ;
             ROL Q3                      ;
 
-            CLC                         ; Сдвигаем остаток влево вместе с виртуальной
-            ROL MANTA0                  ; разрядной сеткой, которая привязана к нему.
-            ROL MANTA1                  ; Неподвижная мантисса делителя в этой сетке
-            ROL MANTA2                  ; станет эквивалентна умноженной на вес следующей
-            ROL MANTAG                  ; младшей цифры частного, которую мы будем выяснять.
+            CLC                         ; Shift the remainder left along with the virtual
+            ROL MANTA0                  ; digit grid attached to it.
+            ROL MANTA1                  ; The fixed mantissa of the divisor in this grid
+            ROL MANTA2                  ; will become equivalent to being multiplied by the weight of the next
+            ROL MANTAG                  ; lower digit of the quotient, which we are going to determine.
 
             IN R16,SREG                 ;
-            SBRS R16,SREG_N             ; Остаток положительный?
-            RJMP SUBMANTB               ; Да, отнимаем мантиссу делителя.
-            ADD MANTA0,MANTB0           ; Нет, прибавляем мантиссу делителя.
+            SBRS R16,SREG_N             ; Is the remainder positive?
+            RJMP SUBMANTB               ; Yes, subtract the mantissa of the divisor.
+            ADD MANTA0,MANTB0           ; No, add the mantissa of the divisor.
             ADC MANTA1,MANTB1           ;
             ADC MANTA2,MANTB2           ;
             ADC MANTAG,MANTBG           ;
-            RJMP CALCDIGIT              ; Определяем следующую цифру частного.
+            RJMP CALCDIGIT              ; Determine the next digit of the quotient.
 
 RESTPOSREM: IN R16,SREG                 ;
-            SBRS R16,SREG_N             ; Последний остаток уже положительный?
-            RJMP CALCSTICKY             ; Да, переходим к вычислению sticky-бита.
-            ADD MANTA0,MANTB0           ; Нет, восстанавливаем до последнего положительного.
+            SBRS R16,SREG_N             ; Is the last remainder already positive?
+            RJMP CALCSTICKY             ; Yes, proceed to calculate the STICKY bit.
+            ADD MANTA0,MANTB0           ; No, restore to the last positive remainder.
             ADC MANTA1,MANTB1           ;
             ADC MANTA2,MANTB2           ;
             ADC MANTAG,MANTBG           ;
