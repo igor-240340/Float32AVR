@@ -221,46 +221,46 @@ RESTPOSREM: IN R16,SREG                 ;
             ADC MANTAG,MANTBG           ;
 
             ;
-            ; Вычисление sticky-бита для корректного округления к ближайшему.
+            ; Calculation of the STICKY bit for correct rounding to the nearest.
             ;
-            ; Если остаток ненулевой, значит справа от частного существуют ненулевые биты.
+            ; If the remainder is non-zero, it means there are non-zero bits to the right of the quotient.
             ; S=1, R>0
             ; S=0, R=0
-CALCSTICKY: COM MANTA0                  ; Вычисление доп. кода остатка.
-            COM MANTA1                  ; Инвертируем остаток: 2^N-1-A < 2^N (для всех значений A).
-            COM MANTA2                  ; Прибавляем единицу: 2^N-1-A+1=2^N-A < 2^N (только для ненулевых A).
-            COM MANTAG                  ; Следовательно, только при нулевом остатке
-            LDI R16,1                   ; из старшего байта будет единица переноса.
-            ADD MANTA0,R16              ; А это значит, что S=NOT(C), где C - бит переноса.
+CALCSTICKY: COM MANTA0                  ; Calculation of the remainder's two's complement.
+            COM MANTA1                  ; Invert the remainder: 2^N-1-A < 2^N (for all values of A).
+            COM MANTA2                  ; Add one: 2^N-1-A+1=2^N-A < 2^N (only for non-zero A).
+            COM MANTAG                  ; Consequently, only with a zero remainder
+            LDI R16,1                   ; will there be a carry from the most significant byte.
+            ADD MANTA0,R16              ; This means that S=NOT(C), where C is the carry bit.
             LDI R16,0                   ;
             ADC MANTA1,R16              ;
             ADC MANTA2,R16              ;
             ADC MANTAG,R16              ;
 
-            IN R16,SREG                 ; Конвертируем бит переноса в S-бит.
+            IN R16,SREG                 ; Convert the carry bit to the S-bit.
             LDI R17,1                   ; 
             EOR R16,R17                 ;
             OUT SREG,R16                ;
 
-            ROL Q0                      ; Добавляем справа к мантиссе частного значение S-бита.
+            ROL Q0                      ; Add the value of the S-bit to the right of the quotient's mantissa.
             ROL Q1                      ; 
             ROL Q2                      ;
             ROL Q3                      ;
 
             ;
-            ; Нормализация мантиссы частного.
+            ; Normalization of the quotient's mantissa.
             ;
-            ; Мантисса частного лежит в интервале (0.5, 2)
-            ; поэтому денормализация возможна только на 1 разряд вправо.
-            SBRC Q3,2                   ; Целочисленная единица в частном есть?
-            RJMP CHECKEXP               ; Да, частное нормализовано, проверяем экспоненту.
-            CLC                         ; Нет, нормализуем влево на 1 разряд.
+            ; The quotient's mantissa lies within the range (0.5, 2),
+            ; therefore, denormalization is only possible by 1 bit to the right.
+            SBRC Q3,2                   ; Is there an integer one in the quotient?
+            RJMP CHECKEXP               ; Yes, the quotient is normalized; we check the exponent.
+            CLC                         ; No, normalize to the left by 1 bit.
             ROL Q0                      ;
             ROL Q1                      ;
             ROL Q2                      ;
             ROL Q3                      ;
                                         
-            LDI R16,0xFF                ; Уменьшаем экспоненту частного на 1.
+            LDI R16,0xFF                ; Decrease the quotient's exponent by 1.
             LDI R17,0XFF                ;
             ADD EXPR0,R16               ;
             ADC EXPR1,R17               ;
