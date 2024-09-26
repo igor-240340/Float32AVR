@@ -266,20 +266,20 @@ CALCSTICKY: COM MANTA0                  ; Calculation of the remainder's two's c
             ADC EXPR1,R17               ;
 
             ;
-            ; Проверка экспоненты на переполнение/антипереполнение.
+            ; Checking the exponent for overflow/underflow.
             ;
-            ; Переполнение: EXP > 127+127=254. По стандарту - установка inf. Текущая реализация - выброс исключения.
-            ; Антипереполнение: EXP < -126+127=1. По стандарту - переход к денормализованному числу. Текущая реализация - установка частного в ноль.
-CHECKEXP:   MOV R18,EXPR0               ; Копируем расширенную экспоненту частного.
+            ; Overflow: EXP > 127+127=254. According to the standard - set to inf. Current implementation - raise an exception.
+            ; Underflow: EXP < -126+127=1. According to the standard - transition to a denormalized number. Current implementation - set the quotient to zero.
+CHECKEXP:   MOV R18,EXPR0               ; Copy the extended exponent of the quotient.
             MOV R19,EXPR1               ;
 
-            LDI R16,255                 ; Формируем -1 в доп. коде.
+            LDI R16,255                 ; Form -1 in two's complement.
             LDI R17,255                 ; 
-            ADD R16,R18                 ; Если истинная экспонента меньше минимального представимого значения (-126),
-            ADC R17,R19                 ; то в коде со смещением после вычитания единицы будет получено отрицательное число.
+            ADD R16,R18                 ; If the true exponent is less than the minimum representable value (-126),
+            ADC R17,R19                 ; then in the biased code, subtracting one will yield a negative number.
             IN R16,SREG                 ; 
-            SBRC R16,SREG_N             ; Экспонента в прямом коде меньше -126?
-            RJMP SETZERO                ; Да, антипереполнение, возвращаем ноль.
+            SBRC R16,SREG_N             ; Is the unbiased exponent less than -126?
+            RJMP SETZERO                ; Yes, underflow, return zero.
                                         ; 
             LDI R16,1                   ; Нет, проверяем экспоненту на переполнение.
             LDI R17,0                   ; Если истинная экспонента больше максимального представимого значения (127),
