@@ -281,15 +281,15 @@ CHECKEXP:   MOV R18,EXPR0               ; Copy the extended exponent of the quot
             SBRC R16,SREG_N             ; Is the unbiased exponent less than -126?
             RJMP SETZERO                ; Yes, underflow, return zero.
                                         ; 
-            LDI R16,1                   ; Нет, проверяем экспоненту на переполнение.
-            LDI R17,0                   ; Если истинная экспонента больше максимального представимого значения (127),
-            ADD R16,R18                 ; то в коде со смещением после прибавления единицы старший байт расширенной экспоненты
-            ADC R17,R19                 ; будет отличен от нуля.
-            COM R17                     ; Если старший байт содержит ноль,
-            LDI R16,1                   ; то вычисление доп. кода даст ноль.
-            ADD R16,R17                 ; Экспонента в прямом коде меньше 128?
-            BREQ ROUND                  ; Да, переполнения нет, переходим к округлению.
-            IJMP                        ; Нет, переполнение, прыжок на обработчик ошибок, указанный в Z.
+            LDI R16,1                   ; No, check the exponent for overflow.
+            LDI R17,0                   ; If the unbiased exponent exceeds the maximum representable value (127),
+            ADD R16,R18                 ; then, after adding one to the biased exponent, there will be a carry
+            ADC R17,R19                 ; to the high-order byte.
+            COM R17                     ; If the high-order byte contains zero,
+            LDI R16,1                   ; then calculating the two's complement will result in zero.
+            ADD R16,R17                 ; Is the unbiased exponent less than 128?
+            BREQ ROUND                  ; Yes, there is no overflow, proceed to rounding.
+            IJMP                        ; No, overflow detected, jump to the error handler specified in Z.
 
             ;
             ; Округление к ближайшему.
