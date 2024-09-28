@@ -292,15 +292,17 @@ CHECKEXP:   MOV R18,EXPR0               ; Copy the extended exponent of the quot
             IJMP                        ; No, overflow detected, jump to the error handler specified in Z.
 
             ;
-            ; Округление к ближайшему.
+            ; Rounding to the nearest.
             ;
-            ; Возможные сочетания битов RS. Для краткости GUARD-бит здесь не учитывается, иллюстрируется сама идея округления.
+            ; NOTE: Rounding occurs only after normalization (if denormalization took place).
+            ;
+            ; Possible combinations of RS bits. For brevity, the GUARD bit is not considered here; the rounding concept is illustrated.
             ; RS
             ; --
-            ; 00: Точное значение. |ERR| = 0.
-            ; 01: Отбрасываем. |ERR| < 2^-24=2^-23/2=ULP/2. Ошибка меньше половины веса последнего разряда мантиссы одинарной точности.
-            ; 10: Если такая ситуация имеет место, то делимое имеет ненулевые разряды за пределами доступной сетки, что невозможно в нашем случае (обоснование - в доках).
-            ; 11: Отбрасываем и прибавляем 2^-23. |ERR| < 2^-24=ULP/2.
+            ; 00: Exact value. |ERR| = 0.
+            ; 01: Discard. |ERR| < 2^-24=2^-23/2=ULP/2. The error is less than half the weight of the least significant bit of the single-precision mantissa.
+            ; 10: If such a situation occurs, it means the dividend has non-zero bits beyond the original single-precision grid, which is impossible in our case (justification is in the doc).
+            ; 11: Discard and add 2^-23. |ERR| < 2^-24=ULP/2.
             ;
             ; Комментарии к последнему случаю:
             ; Q - истинная мантисса частного (бесконечная точность).
