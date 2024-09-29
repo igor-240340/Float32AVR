@@ -304,13 +304,13 @@ CHECKEXP:   MOV R18,EXPR0               ; Copy the extended exponent of the quot
             ; 10: If such a situation occurs, it means the dividend has non-zero bits beyond the original single-precision grid, which is impossible in our case (justification is in the doc).
             ; 11: Discard and add 2^-23. |ERR| < 2^-24=ULP/2.
             ;
-            ; Комментарии к последнему случаю:
-            ; Q - истинная мантисса частного (бесконечная точность).
-            ; Q' - округленное значение.
-            ; Q' = Q-(2^-24+A)+2^-23, где A - биты за пределами сетки вправо от R, индикатором которых является S-БИТ, следовательно, A < 2^-24.
-            ; 2^-23 = 2^-24+2^-24 = 2^-24+(A+B), где (A+B) = 2^-24, но A > 0, следовательно B < 2^-24.
-            ; тогда можем записать Q' = Q-2^-24-A+2^-24+A+B = Q+B, где B < 2^-24.
-            ; поэтому в последнем случае |ERR| < 2^-24=ULP/2.
+            ; Comments on the last case:
+            ; Q - true mantissa of the quotient (infinite precision).
+            ; Q' - rounded value.
+            ; Q' = Q-(2^-24+A)+2^-23, where A represents the bits beyond the grid to the right of R, indicated by the S bit, thus A < 2^-24.
+            ; 2^-23 = 2^-24+2^-24 = 2^-24+(A+B), where (A+B) = 2^-24, but A > 0, hence B < 2^-24.
+            ; Then we can write Q' = Q-2^-24-A+2^-24+A+B = Q+B, where B < 2^-24.
+            ; Therefore, in the last case |ERR| < 2^-24=ULP/2.
 ROUND:      MOV RGSBITS,Q0              ; Извлекаем RGS-биты из младшего байта мантиссы частного.
             LDI R16,RGSMASK             ;
             AND RGSBITS,R16             ;
