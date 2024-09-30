@@ -311,30 +311,30 @@ CHECKEXP:   MOV R18,EXPR0               ; Copy the extended exponent of the quot
             ; 2^-23 = 2^-24+2^-24 = 2^-24+(A+B), where (A+B) = 2^-24, but A > 0, hence B < 2^-24.
             ; Then we can write Q' = Q-2^-24-A+2^-24+A+B = Q+B, where B < 2^-24.
             ; Therefore, in the last case |ERR| < 2^-24=ULP/2.
-ROUND:      MOV RGSBITS,Q0              ; Извлекаем RGS-биты из младшего байта мантиссы частного.
+ROUND:      MOV RGSBITS,Q0              ; Extract RGS bits from the least significant byte of the quotient's mantissa.
             LDI R16,RGSMASK             ;
             AND RGSBITS,R16             ;
 
             LDI STEPS,3                 ; Отбрасываем RGS-биты в мантиссе частного.
-RSHIFT3:    CLC                         ; Мы вычисляли 26 цифр частного + S-бит,
-            ROR Q3                      ; поэтому после сдвига все цифры мантиссы частного
-            ROR Q2                      ; поместятся в трех младших байтах.
+RSHIFT3:    CLC                         ; We calculated 26 digits of the quotient + S bit,
+            ROR Q3                      ; so after the shift, all digits of the quotient's mantissa
+            ROR Q2                      ; will fit into the three least significant bytes.
             ROR Q1                      ;
             ROR Q0                      ;
             DEC STEPS                   ;
             BRNE RSHIFT3                ;
 
-            LDI R16,0xFC                ; Если в RGS установлен бит R и есть ненулевые биты справа от него,
-            ADD RGSBITS,R16             ; тогда в RGS находится число больше 4, а значит, отбрасывая RGS
-            IN R16,SREG                 ; мы получаем ошибку больше ULP/2.
-            SBRC R16, SREG_N            ; Отбросили больше ULP/2?
-            RJMP PACK                   ; Нет, пакуем частное.
+            LDI R16,0xFC                ; If the R bit is set in RGS and there are non-zero bits to the right of it,
+            ADD RGSBITS,R16             ; then the value in RGS is greater than 4, which means that by discarding RGS,
+            IN R16,SREG                 ; we introduce an error greater than ULP/2.
+            SBRC R16, SREG_N            ; Discarded more than ULP/2?
+            RJMP PACK                   ; No, pack the quotient.
 
-            LDI R16,1                   ; Да, прибавляем 2^-23.
-            ADD Q0,R16                  ; Переполнения при этом не будет (более детальное обоснование - в доках).
-            LDI R16,0                   ; Нормализованная мантисса, которая даст переполнение - больше максимальной возможной нормализованной мантиссы,
-            ADC Q1,R16                  ; а денормализованная мантисса, которая даст после нормализации переполнение,
-            ADC Q2,R16                  ; может быть получена только если делимое имеет ненулевые разряды за пределами одинарной точности, что невозможно в нашем случае.
+            LDI R16,1                   ; Yes, add 2^-23.
+            ADD Q0,R16                  ; There will be no overflow because
+            LDI R16,0                   ; a normalized mantissa that causes overflow is greater than the maximum possible normalized mantissa;
+            ADC Q1,R16                  ; a denormalized mantissa that would cause overflow after normalization
+            ADC Q2,R16                  ; can only be obtained if the dividend has non-zero bits beyond single precision, which is impossible in our case.
 
             ;
             ; Упаковка знака, мантиссы и экспоненты частного и запись на место делимого.
