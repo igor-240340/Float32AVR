@@ -337,23 +337,23 @@ RSHIFT3:    CLC                         ; We calculated 26 digits of the quotien
             ADC Q2,R16                  ; can only be obtained if the dividend has non-zero bits beyond single precision, which is impossible in our case.
 
             ;
-            ; Упаковка знака, мантиссы и экспоненты частного и запись на место делимого.
-            ; Нормализованная и округленная мантисса частного теперь занимает 3 младших байтах.
-PACK:       ROL Q0                      ; Сдвигаем мантиссу влево, убирая целочисленную единицу.
+            ; Packing the sign, mantissa, and exponent of the quotient and writing it to the dividend's location.
+            ; NOTE: The normalized and rounded mantissa of the quotient now occupies the 3 least significant bytes.
+PACK:       ROL Q0                      ; Shift the mantissa left, removing the integer one.
             ROL Q1                      ;
             ROL Q2                      ;
 
-            CLC                         ; Выдвигаем вправо LSB экспоненты в разряд переноса,
-            ROR EXPR0                   ; одновременно освобождая MSB под знак.
+            CLC                         ; Shift the LSB of the exponent to the carry bit to the right,
+            ROR EXPR0                   ; while freeing the MSB for the sign.
 
-            ROR Q2                      ; Возвращаем мантиссу на место
-            ROR Q1                      ; с LSB экспоненты вместо целочисленной единицы.
+            ROR Q2                      ; Restore the mantissa
+            ROR Q1                      ; with the LSB of the exponent in place of the integer one.
             ROR Q0                      ;
 
-            OR EXPR0,RSIGN              ; Устанавливаем разряд знака.
+            OR EXPR0,RSIGN              ; Set the sign bit.
 
             ;
-            ; Запись мантиссы частного на место делимого.
+            ; Write the quotient's mantissa to the dividend's location.
             MOV MANTA0,Q0
             MOV MANTA1,Q1
             MOV MANTA2,Q2
