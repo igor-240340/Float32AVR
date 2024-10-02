@@ -361,40 +361,40 @@ PACK:       ROL Q0                      ; Shift the mantissa left, removing the 
             RJMP EXIT
 
 ;
-; Умножает два числа по схеме с неподвижным множителем.
-; NOTE: Мы рассматриваем умножение множителя на множимое, т.е. B*A.
+; Multiplies two numbers using a fixed multiplier scheme.
+; NOTE: We are considering the multiplication of the multiplier by the multiplicand, i.e., B*A.
 ;
-; Множимое ожидается в регистрах: R11, R10, R9, R8.
-; Множитель ожидается в регистрах: R15, R14, R13, R12. 
-; Произведение помещается на место множимого: R11, R10, R9, R8.
+; The multiplicand is expected in registers: R11, R10, R9, R8.
+; The multiplier is expected in registers: R15, R14, R13, R12. 
+; The product is placed in the multiplicand's location: R11, R10, R9, R8.
 FMUL32:     ;
-            ; Фильтрация операндов.
+            ; Operand filtering.
             CLR R16                     ;
             OR R16,R8                   ;
             OR R16,R9                   ;
             OR R16,R10                  ;
             OR R16,R11                  ;
-            IN R16,SREG                 ; 
-            SBRC R16,SREG_Z             ; Множимое равно нулю?
-            RJMP SETZERO                ; Да, возвращаем ноль.
+            IN R16,SREG                 ;
+            SBRC R16,SREG_Z             ; Is the multiplicand zero?
+            RJMP SETZERO                ; Yes, return zero.
 
-            CLR R16                     ; Нет, проверяем множитель.
+            CLR R16                     ; No, check the multiplier.
             OR R16,R12                  ;
             OR R16,R13                  ;
             OR R16,R14                  ;
             OR R16,R15                  ;
             IN R16,SREG                 ; 
-            SBRC R16,SREG_Z             ; Множитель равен нулю?
-            RJMP SETZERO                ; Да, возвращаем ноль.
+            SBRC R16,SREG_Z             ; Is the multiplier zero?
+            RJMP SETZERO                ; Yes, return zero.
 
             ;
-            ; Определение знака произведения.
-            MOV RSIGN,R11               ; Копируем старший байт множимого.
-            MOV R1,R15                  ; Копируем старший байт множителя.
-            LDI R16,0b10000000          ; Загружаем маску знака.
-            AND RSIGN,R16               ; Извлекаем знак множимого.
-            AND R1,R16                  ; Извлекаем знак множителя.
-            EOR RSIGN,R1                ; Определяем знак произведения.
+            ; Determining the sign of the product.
+            MOV RSIGN,R11               ; Copy the most significant byte of the multiplicand.
+            MOV R1,R15                  ; Copy the most significant byte of the multiplier.
+            LDI R16,0b10000000          ; Load the sign mask.
+            AND RSIGN,R16               ; Extract the sign of the multiplicand.
+            AND R1,R16                  ; Extract the sign of the multiplier.
+            EOR RSIGN,R1                ; Determine the sign of the product.
 
             ;
             ; Распаковка множимого.
