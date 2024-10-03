@@ -397,33 +397,33 @@ FMUL32:     ;
             EOR RSIGN,R1                ; Determine the sign of the product.
 
             ;
-            ; Распаковка множимого.
-            ROL R10                     ; MSB мантиссы содержит LSB экспоненты. Сдвигаем его в бит переноса.
-            ROL R11                     ; Избавляемся от знака и восстанавливаем младший бит экспоненты.
-            SEC                         ; Восстанавливаем скрытую единицу мантиссы.
-            ROR R10                     ; Возвращаем на место старший байт мантиссы.
+            ; Unpack the multiplicand.
+            ROL R10                     ; The MSB of the mantissa contains the LSB of the exponent. Shift it into the carry bit.
+            ROL R11                     ; Remove the sign and restore the least significant bit of the exponent.
+            SEC                         ; Restore the hidden bit of the mantissa.
+            ROR R10                     ; Return the most significant byte of the mantissa to its place.
 
             ;
-            ; Распаковка множителя.
-            ROL R14                     ; То же самое что и для множимого.
+            ; Unpack the multiplier.
+            ROL R14                     ; Same as for the multiplicand.
             ROL R15                     ; 
             SEC                         ;
             ROR R14                     ; 
 
             ;
-            ; Вычисление экспоненты произведения.
+            ; Calculate the exponent of the product.
             ;
-            ; Поскольку экспоненты представлены в коде со смещением, то
-            ; их значения всегда являются положительными числами в диапазоне [1,254].
+            ; Since the exponents are biased,
+            ; their values are always positive numbers in the range [1,254].
             CLR EXPA1
             CLR EXPB1
             
             ADD EXPA0,EXPB0             ; EXPA=EXPA+EXPB.
-            ADC EXPA1,EXPB1             ; Сумма экспонент содержит избыточное значение 127.
-            LDI R16,-127                ; Необходимо отнять это значение.
-            LDI R17,255                 ; Формируем доп. код для -127 в двойной сетке.
-            ADD EXPA0,R16               ; Восстанавливаем сумму экспонент
-            ADC EXPA1,R17               ; в коде со смещением.
+            ADC EXPA1,EXPB1             ; The sum of the exponents contains an excess value of 127.
+            LDI R16,-127                ; It is necessary to subtract this value.
+            LDI R17,255                 ; Form the two's complement for -127 in the double binary grid.
+            ADD EXPA0,R16               ; Make the sum of the exponents biased.
+            ADC EXPA1,R17               ;
 
             ;
             ; Вычисление мантиссы произведения.
