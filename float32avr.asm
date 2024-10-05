@@ -426,50 +426,50 @@ FMUL32:     ;
             ADC EXPA1,R17               ;
 
             ;
-            ; Вычисление мантиссы произведения.
-            LDI R22,24                  ; Количество шагов цикла равно количеству цифр множимого.
+            ; Calculate the mantissa of the product.
+            LDI R22,24                  ; The number of loop steps is equal to the number of digits in the multiplicand.
 
-            CLR MANTP0                  ; Зануляем произведение.
+            CLR MANTP0                  ; Zero out the product.
             CLR MANTP1                  ;
             CLR MANTP2                  ;
             CLR MANTP3                  ;
             CLR MANTP4                  ;
             CLR MANTP5                  ;
 
-NEXTDIGIT:  ROR MANTA2                  ; Извлекаем очередную цифру множимого.
+NEXTDIGIT:  ROR MANTA2                  ; Extract the next digit of the multiplicand.
             ROR MANTA1                  ;
             ROR MANTA0                  ;
                                         
-            IN R16,SREG                 ; 
-            SBRS R16,SREG_C             ; Цифра равна 1?
-            RJMP LOOPCOND0              ; Нет, равна 0, множитель не прибавляем.
-            ADD MANTP3,MANTB0           ; Да, прибавляем множитель к аккумулятору.
-            ADC MANTP4,MANTB1           ; Младшие 3 байта множителя в двойной сетке нулевые,
-            ADC MANTP5,MANTB2           ; поэтому достаточно сложить только старшие байты.
+            IN R16,SREG                 ;
+            SBRS R16,SREG_C             ; Is the digit equal to 1?
+            RJMP LOOPCOND0              ; No, it's 0, do not add the multiplier.
+            ADD MANTP3,MANTB0           ; Yes, add the multiplier to the accumulator.
+            ADC MANTP4,MANTB1           ; The lower 3 bytes of the multiplier in the double binary grid are zero,
+            ADC MANTP5,MANTB2           ; so it's enough to add only the higher bytes.
 
-LOOPCOND0:  DEC R22                     ; Это была последняя цифра множимого?
-            BREQ CHECKOVF0              ; Да, мантисса произведения вычислена, проверяем её на переполнение.
+LOOPCOND0:  DEC R22                     ; Was that the last digit of the multiplicand?
+            BREQ CHECKOVF0              ; Yes, the mantissa of the product has been calculated, checking it for overflow.
 
-            ROR MANTP5                  ; Нет, делим аккумулятор на 2.
+            ROR MANTP5                  ; No, divide the accumulator by 2.
             ROR MANTP4                  ;
             ROR MANTP3                  ;
             ROR MANTP2                  ;
             ROR MANTP1                  ;
             ROR MANTP0                  ;            
 
-            RJMP NEXTDIGIT              ; Переходим к следующей цифре множимого.
+            RJMP NEXTDIGIT              ; Move on to the next digit of the multiplicand.
 
 CHECKOVF0:  IN R16,SREG                 ; 
-            SBRS R16,SREG_C             ; Мантисса произведения дала переполнение?
-            RJMP ROUNDPROD              ; Нет, переходим к её округлению.
-            ROR MANTP5                  ; Да, нормализуем мантиссу произведения вправо на 1 разряд.
+            SBRS R16,SREG_C             ; Did the mantissa of the product overflow?
+            RJMP ROUNDPROD              ; No, proceed to rounding it.
+            ROR MANTP5                  ; Yes, normalize the mantissa of the product to the right by 1 bit.
             ROR MANTP4                  ;
             ROR MANTP3                  ;
             ROR MANTP2                  ;
             ROR MANTP1                  ;
             ROR MANTP0                  ;
 
-            LDI R16,1                   ; Корректируем экспоненту.
+            LDI R16,1                   ; Adjust the exponent.
             ADD EXPA0,R16               ;
             LDI R16,0                   ;
             ADC EXPA1,R16               ;
