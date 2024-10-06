@@ -475,10 +475,10 @@ CHECKOVF0:  IN R16,SREG                 ;
             ADC EXPA1,R16               ;
 
             ;
-            ; Округление мантиссы произведения.
+            ; Rounding the product's mantissa.
             ;
-            ; После установки S-БИТА и извлечения пары RS
-            ; MANTP2 может содержать следующие значения:
+            ; After setting the S-bit and extracting the RS pair,
+            ; MANTP2 can hold the following values:
             ; - 0b11000000
             ; - 0b10000000
             ; - 0b01000000
@@ -486,39 +486,39 @@ CHECKOVF0:  IN R16,SREG                 ;
 ROUNDPROD:  CLR GUARD
             CLC
             
-            ROL MANTP0                  ; Сдвигаем R-БИТ в GUARD-регистр.
-            ROL MANTP1                  ; Теперь младшая часть содержит только биты после R.
+            ROL MANTP0                  ; Shift the R-bit into the GUARD register.
+            ROL MANTP1                  ; Now the lower part contains only the bits after R.
             ROL MANTP2                  ;
             ROL GUARD                   ;
 
-            COM MANTP0                  ; Если после R-БИТА все биты нулевые,
-            COM MANTP1                  ; то вычисление доп. кода младшей части
-            COM MANTP2                  ; даст бит переноса.
-            LDI R16,1                   ; Поэтому отсутствие бита переноса
-            ADD MANTP0,R16              ; используем как признак того,
-            LDI R16,0                   ; что после R-бита есть хотя бы один ненулевой бит.
-            ADC MANTP1,R16              ;
-            ADC MANTP2,R16              ;
+            COM MANTP0                  ; If all the bits after the R-bit are zero,
+            COM MANTP1                  ; then calculating the two's complement of the lower part
+            COM MANTP2                  ; will produce a carry bit.
+            LDI R16,1                   ; Therefore, the absence of a carry bit
+            ADD MANTP0,R16              ; is used as an indicator
+            LDI R16,0                   ; that there is at least one non-zero bit after the R-bit.
+            ADC MANTP1,R16              ; UPD: Of course, we could detect all zeroes
+            ADC MANTP2,R16              ; in a much simpler way using OR.
 
             IN R16,SREG                 ;
-            SBRS R16,SREG_C             ; После r-бита есть ненулевые биты?
-            SBR MANTP2,0b10000000       ; Да, устанавливаем S-бит.
+            SBRS R16,SREG_C             ; Are there non-zero bits after the R-bit?
+            SBR MANTP2,0b10000000       ; Yes, set the S-bit.
 
-            ROR GUARD                   ; Нет, вся младшая часть нулевая (включая S-бит, поэтому явно обнулять S-бит нет необходимости).
-            ROR MANTP2                  ; Восстанавливаем R-бит.
+            ROR GUARD                   ; No, the entire lower part is zero (including the S-bit, so there is no need to explicitly clear the S-bit).
+            ROR MANTP2                  ; Restoring the R-bit.
             ROR MANTP1                  ;
             ROR MANTP0                  ;
 
-            LDI R16,0b11000000          ; Извлекаем RS-биты.
+            LDI R16,0b11000000          ; Extracting the RS bits.
             AND MANTP2,R16              ;
 
-            CLR GUARD                   ; Интерпретируем регистр с RS-битами как число и формируем его доп. код.
-            COM MANTP2                  ; Доп. код формируем в двойной сетке, т.к. для представления в доп. коде
-            COM GUARD                   ; значений 0b11000000 И 0b10000000 со знаком минус
-            LDI R16,1                   ; одинарной сетки уже не достаточно.
-            ADD MANTP2,R16              ;
-            LDI R16,0                   ;
-            ADC GUARD,R16               ;
+            CLR GUARD                   ; Interpret the register with RS bits as a number and form its two's complement.
+            COM MANTP2                  ; The two's complement is formed in double range, as the single range is insufficient
+            COM GUARD                   ; to represent the values 0b11000000 and 0b10000000 as negative in two's complement.
+            LDI R16,1                   ; UPD: In fact the single range is insufficent only to distinguish negative values
+            ADD MANTP2,R16              ; from positive ones. But when performing subtraction we can use carry bit as an
+            LDI R16,0                   ; indication of the sign of the result, so we don't actually need to form two's
+            ADC GUARD,R16               ; complement in the double range.
 
             CLR STATUS0                 ; Разность между опорным значеним 0b10000000 и числовой интерпретацией RS
             CLR STATUS1                 ; однозначно связана с направлением округления (см. доку).
