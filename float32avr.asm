@@ -520,21 +520,21 @@ ROUNDPROD:  CLR GUARD
             LDI R16,0                   ; indication of the sign of the result, so we don't actually need to form two's
             ADC GUARD,R16               ; complement in the double range.
 
-            CLR STATUS0                 ; Разность между опорным значеним 0b10000000 и числовой интерпретацией RS
-            CLR STATUS1                 ; однозначно связана с направлением округления (см. доку).
-            LDI R16,0b10000000          ; За признак берем нулевой результат и знак полученной разности.
+            CLR STATUS0                 ; The difference between the reference value 0b10000000 and the numerical interpretation of RS
+            CLR STATUS1                 ; is directly related to the rounding direction (see the documentation).
+            LDI R16,0b10000000          ; We take the zero result and the sign of the obtained difference as the indicator for the rounding direction.
             ADD MANTP2,R16              ; 
-            IN STATUS0,SREG             ; Сохраняем флаги после операции с младшим байтом.
+            IN STATUS0,SREG             ; Save flags after the operation with the least significant byte.
             LDI R16,0                   ; 
             ADC GUARD,R16               ;
-            IN STATUS1,SREG             ; Сохраняем флаги после операции со старшим байтом.
+            IN STATUS1,SREG             ; Save flags after the operation with the most significant byte.
 
-            SBRS STATUS1,SREG_N         ; RS=0b11000000? [NOTE: Отрицательная разность возможна только в ситуации 0b10000000-0b11000000.]
-            RJMP HALFWAY                ; Нет, проверяем следующий вариант.
-            LDI R16,1                   ; Да, младшая часть больше ulp/2. Округляем в большую сторону.
-            ADD MANTP3,R16              ; Отбрасываем младшую часть и прибавляет ULP.
-            LDI R16,0                   ; Это эквивалентно прибавлению к младшей части величины меньше ULP/2,
-            ADC MANTP4,R16              ; приводящему к занулению младшей части и появлению бита переноса в MANTP3.
+            SBRS STATUS1,SREG_N         ; RS=0b11000000? [NOTE: A negative difference is only possible in the situation 0b10000000-0b11000000.]
+            RJMP HALFWAY                ; No, checking the next case.
+            LDI R16,1                   ; Yes, the lower part is greater than ULP/2. Rounding up.
+            ADD MANTP3,R16              ; Discarding the lower part and adding ULP.
+            LDI R16,0                   ; This is equivalent to adding a value smaller than ULP/2 to the lower part,
+            ADC MANTP4,R16              ; leading to zeroing out the lower part and generating a carry bit in MANTP3.
             ADC MANTP5,R16              ;
             RJMP CHECKOVF1              ;
 
