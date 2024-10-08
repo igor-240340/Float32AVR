@@ -538,15 +538,15 @@ ROUNDPROD:  CLR GUARD
             ADC MANTP5,R16              ;
             RJMP CHECKOVF1              ;
 
-HALFWAY:    AND STATUS1,STATUS0         ; Разность нулевая, если флаг Z был установлен для каждого байта.
+HALFWAY:    AND STATUS1,STATUS0         ; The difference is zero if the Z-flag was set for each byte.
             SBRS STATUS1,SREG_Z         ; RS=0b10000000?
-            RJMP CHECKEXP1              ; Нет, RS=0b01000000 или RS=0b00000000. Младшая часть меньше ULP/2, просто отбрасываем её. Переполнение при округлении не возможно - пропускаем проверку.
-            LDI R16,0b00000001          ; Да, симметричное округление. Младшая часть равна ULP/2, округляем к четному.
-            AND R16,MANTP3              ; Извлекаем ULP в R16.
-            ADD MANTP3,R16              ; Если ULP=1, то старшая часть нечетная
-            LDI R16,0                   ; и прибавление R16 (который также содержит 1) даст переход к четному.
-            ADC MANTP4,R16              ; Если же ULP=0, то значение уже четное
-            ADC MANTP5,R16              ; и прибавление R16 (который также содержит 0) никакого эффекта не даст, оставляя значение четным.
+            RJMP CHECKEXP1              ; No, RS=0b01000000 or RS=0b00000000. The lower part is less than ULP/2, so we simply discard it. Overflow during rounding is impossible - skip the check.
+            LDI R16,0b00000001          ; Yes, halfway situation. The lower part equals ULP/2, round to the nearest even value.
+            AND R16,MANTP3              ; Extract ULP into R16.
+            ADD MANTP3,R16              ; If ULP=1, then the higher part is odd
+            LDI R16,0                   ; and adding R16 (which also contains 1) will result in rounding to the nearest even number.
+            ADC MANTP4,R16              ; If ULP=0, then the value is already even,
+            ADC MANTP5,R16              ; and adding R16 (which also contains 0) will have no effect, keeping the value even.
 
             ;
             ; Проверка мантиссы произведения на переполнение после округления.
