@@ -549,34 +549,34 @@ HALFWAY:    AND STATUS1,STATUS0         ; The difference is zero if the Z-flag w
             ADC MANTP5,R16              ; and adding R16 (which also contains 0) will have no effect, keeping the value even.
 
             ;
-            ; Проверка мантиссы произведения на переполнение после округления.
+            ; Checking the product's mantissa for overflow after rounding.
 CHECKOVF1:  IN R16,SREG                 ; 
-            SBRS R16,SREG_C             ; Округление дало переполнение?
-            RJMP CHECKEXP1              ; Нет, переходим к проверке экспоненты.
-            ROR MANTP5                  ; Да, нормализуем мантиссу произведения вправо на 1 разряд.
+            SBRS R16,SREG_C             ; Did rounding cause an overflow?
+            RJMP CHECKEXP1              ; No, let's proceed to the exponent check.
+            ROR MANTP5                  ; Normalize the mantissa of the product to the right by 1 bit.
             ROR MANTP4                  ;
             ROR MANTP3                  ;
 
-            LDI R16,1                   ; Корректируем экспоненту.
+            LDI R16,1                   ; Correct the exponent.
             ADD EXPA0,R16               ;
             LDI R16,0                   ;
             ADC EXPA1,R16               ;
 
             ;
-            ; Проверка итогового произведения на переполнение/антипереполнение по экспоненте.
+            ; Check the final product for exponent overflow/underflow.
             ;
-            ; Если экспонента меньше -126 (-126+127=1 в коде со смещением), то произведение слишком мало для представления в одинарном float и мы переходим к нулю.
-            ; Если экспонента больше 127 (127+127=254 в коде со смещением), то произведение слишком велико и мы выбрасываем исключение.
-CHECKEXP1:  MOV R18,EXPR0               ; Копируем расширенную экспоненту произведения.
+            ; If the exponent is less than -126 (-126+127=1 in biased representation), then the product is too small to be represented as a single float and we flush to zero.
+            ; If the exponent is greater than 127 (127+127=254 in biased representation), then the product is too large, and we throw an exception.
+CHECKEXP1:  MOV R18,EXPR0               ; Copy the extended exponent of the product.
             MOV R19,EXPR1               ;
 
-            LDI R16,255                 ; Формируем -1 в доп. коде.
+            LDI R16,255                 ; Form -1 in two's complement.
             LDI R17,255                 ; 
-            ADD R16,R18                 ; Если истинная экспонента меньше минимального представимого значения (-126),
-            ADC R17,R19                 ; то в коде со смещением после вычитания единицы будет получено отрицательное число.
+            ADD R16,R18                 ; If the unbiased exponent is less than the minimum representable value (-126),
+            ADC R17,R19                 ; then in the biased representation, subtracting one will yield a negative number.
             IN R16,SREG                 ; 
-            SBRC R16,SREG_N             ; Экспонента в прямом коде меньше -126?
-            RJMP SETZERO                ; Да, антипереполнение, возвращаем ноль.
+            SBRC R16,SREG_N             ; Is the unbiased exponent less than -126?
+            RJMP SETZERO                ; Yes, underflow; return zero.
                                         ; 
             LDI R16,1                   ; Нет, проверяем экспоненту на переполнение.
             LDI R17,0                   ; Если истинная экспонента больше максимального представимого значения (127),
