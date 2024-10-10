@@ -578,35 +578,35 @@ CHECKEXP1:  MOV R18,EXPR0               ; Copy the extended exponent of the prod
             SBRC R16,SREG_N             ; Is the unbiased exponent less than -126?
             RJMP SETZERO                ; Yes, underflow; return zero.
                                         ; 
-            LDI R16,1                   ; Нет, проверяем экспоненту на переполнение.
-            LDI R17,0                   ; Если истинная экспонента больше максимального представимого значения (127),
-            ADD R16,R18                 ; то в коде со смещением после прибавления единицы старший байт расширенной экспоненты будет отличен от нуля.
-            ADC R17,R19                 ; Экспонента в прямом коде меньше 128?
-            BREQ PACKPROD               ; Да, переполнения нет, переходим к упаковке.
-            IJMP                        ; Нет, переполнение, прыжок на обработчик ошибок, указанный в Z.
+            LDI R16,1                   ; No, check the exponent for overflow.
+            LDI R17,0                   ; If the true exponent is greater than the maximum representable value (127),
+            ADD R16,R18                 ; then after adding one to the biased exponent, its higher byte will be non-zero.
+            ADC R17,R19                 ; Is the unbiased exponent less than 128?
+            BREQ PACKPROD               ; Yes, no overflow; proceed to packing.
+            IJMP                        ; No, overflow; jump to the error handler pointed to by Z.
             
             ;
-            ; Упаковка мантиссы и экспоненты произведения.
-PACKPROD:   ROL MANTP3                  ; Сдвигаем мантиссу влево, убирая целочисленную единицу.
-            ROL MANTP4                  ;
+            ; Pack the mantissa and exponent of the product.
+PACKPROD:   ROL MANTP3                  ; Shift the mantissa left, removing the integer one.
+            ROL MANTP4                  ; NOTE: It's enough to shift only the highest byte of the mantissa.
             ROL MANTP5                  ;
 
-            CLC                         ; Выдвигаем вправо LSB экспоненты в разряд переноса,
-            ROR EXPR0                   ; одновременно освобождая MSB под знак.
+            CLC                         ; Shift the LSB of the exponent to the carry bit,
+            ROR EXPR0                   ; while simultaneously freeing the MSB for the sign.
 
-            ROR MANTP5                  ; Возвращаем мантиссу на место
-            ROR MANTP4                  ; с LSB экспоненты вместо целочисленной единицы.
+            ROR MANTP5                  ; Restore the mantissa to its position
+            ROR MANTP4                  ; replacing the integer one with the LSB of the exponent.
             ROR MANTP3                  ;
 
-            OR EXPR0,RSIGN              ; Устанавливаем разряд знака.
+            OR EXPR0,RSIGN              ; Set the sign bit.
 
-            MOV MANTA0,MANTP3           ; Запись мантиссы произведения на место мантиссы множимого.
+            MOV MANTA0,MANTP3           ; Write the mantissa of the product to the position of the multiplicand's mantissa.
             MOV MANTA1,MANTP4
             MOV MANTA2,MANTP5
 
             RJMP EXIT
 
-            ; Выход.
+            ; Exit from FMUL32.
 EXIT:       RET
 
             ;
