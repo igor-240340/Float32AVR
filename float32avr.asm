@@ -610,13 +610,13 @@ PACKPROD:   ROL MANTP3                  ; Shift the mantissa left, removing the 
 EXIT:       RET
 
             ;
-            ; Установка результата в ноль.
+            ; Set the result to zero.
             ;
-            ; Выполняется в следующих случаях:
-            ; - Антипереполнение результата для любой операции.
-            ; - Делимое равно нулю.
-            ; - Хотя бы один сомножитель равен нулю.
-            ; - Оба слагаемых равны нулю.
+            ; Happens in the following cases:
+            ; - Underflow.
+            ; - Dividend is zero.
+            ; - At least one multiplicand is zero.
+            ; - Both addends are zero.
 SETZERO:    CLR MANTA0
             CLR MANTA1
             CLR MANTA2
@@ -624,39 +624,39 @@ SETZERO:    CLR MANTA0
             RJMP EXIT
 
 ;
-; Вычисляет разность двух положительных чисел.
+; Computes the difference between two numbers.
 ;
-; Уменьшаемое ожидается в регистрах: R11, R10, R9, R8.
-; Вычитаемое слагаемое ожидается в регистрах: R15, R14, R13, R12. 
-; Разность помещается на место уменьшаемого: R11, R10, R9, R8.
+; The minuend is expected in registers: R11, R10, R9, R8.
+; The subtrahend is expected in registers: R15, R14, R13, R12. 
+; The difference is stored in the place of the minuend: R11, R10, R9, R8.
 FSUB32:     LDI R16,0b10000000          ; B=-B.
             EOR B3,R16                  ;
             RJMP FADD32                 ;
 
 ;
-; Складывает два числа.
+; Adds two numbers.
 ;
-; Первое слагаемое ожидается в регистрах: R11, R10, R9, R8.
-; Второе слагаемое ожидается в регистрах: R15, R14, R13, R12. 
-; Сумма помещается на место первого слагаемого: R11, R10, R9, R8.
+; The first addend is expected in registers: R11, R10, R9, R8.
+; The second addend is expected in registers: R15, R14, R13, R12. 
+; The sum is stored in the place of the first addend: R11, R10, R9, R8.
 FADD32:     ;
-            ; Своп.
-            ; Установка наибольшего (по модулю) операнда первым.
-            MOV R0,R8                   ; Копируем A.
+            ; Swap.
+            ; Set the largest (by absolute value) operand as the first.
+            MOV R0,R8                   ; Copy A.
             MOV R1,R9                   ;
             MOV R2,R10                  ;
             MOV R3,R11                  ;
 
-            MOV R4,R12                  ; Копируем B.
+            MOV R4,R12                  ; Copy B.
             MOV R5,R13                  ;
             MOV R6,R14                  ;
             MOV R7,R15                  ;
 
             LDI R16,0b01111111          ;
-            AND R3,R16                  ; Вычисляем |A|.
-            AND R7,R16                  ; Вычисляем |B|.
+            AND R3,R16                  ; Compute |A|.
+            AND R7,R16                  ; Compute |B|.
 
-            COM R4                      ; Вычисляем доп. код |B|.
+            COM R4                      ; Compute the two's complement of |B|.
             COM R5                      ;
             COM R6                      ;
             COM R7                      ;
@@ -667,21 +667,21 @@ FADD32:     ;
             ADC R6,R16                  ;
             ADC R7,R16                  ;
 
-            ADD R4,R0                   ; |A|-|B|. Перезаписываем копию B,
-            ADC R5,R1                   ; которая уже и так в доп. коде,
-            ADC R6,R2                   ; чтобы сохранить нетронутой копию A в прямом коде.
+            ADD R4,R0                   ; |A|-|B|.
+            ADC R5,R1                   ; Overwrite -|B| to preserve the untouched |A|.
+            ADC R6,R2                   ;
             ADC R7,R3                   ;
                                         ; |A|-|B|>=0?
-            BRGE HANDLEZERO             ; Да, своп не нужен. Переходим к обработке нулевых операндов.
-                                        ; Нет, делаем своп.
-            MOV R3,R11                  ; Бэкапим A. Но поскольку регистры R0..R3 уже хранят |A|, остается только восстановить знак.
+            BRGE HANDLEZERO             ; Yes, no swap is needed. Proceed to handling zero operands.
+                                        ; No, perform the swap.
+            MOV R3,R11                  ; Backup A. Since registers R0..R3 already store |A|, to backup A we just restore the sign for |A|.
             
-            MOV R8,R12                  ; Записываем B на место A.
+            MOV R8,R12                  ; Store B in the place of A.
             MOV R9,R13                  ;
             MOV R10,R14                 ;
             MOV R11,R15                 ;
 
-            MOV R12,R0                  ; Восстанавливаем из бэкапа A на место B.
+            MOV R12,R0                  ; Restore A to the position of B.
             MOV R13,R1                  ;
             MOV R14,R2                  ;
             MOV R15,R3                  ;
