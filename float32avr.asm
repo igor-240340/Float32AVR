@@ -687,54 +687,54 @@ FADD32:     ;
             MOV R15,R3                  ;
 
             ;
-            ; Обработка нулевых операндов.
+            ; Handle zero operands.
             ;
-            ; Возможные ситуации до свопа (где 1 - любое ненулевое значение операнда):
+            ; Possible scenarios before the swap (where 1 is any non-zero operand value):
             ; 0,0
             ; 0,1
             ; 1,0
             ; 1,1
             ;
-            ; После свопа остаются только следующие варианты:
+            ; After the swap, only the following scenarios remain:
             ; 0,0
             ; 1,0
             ; 1,1
             ;
-            ; Следовательно, если после свопа первый операнд нулевой, значит оба нулевые, результат - ноль.
-            ; Если второй операнд нулевой, значит первый ненулевой, результат - первый операнд.
+            ; Therefore, if the first operand is zero after the swap, both operands are zero, and the result is zero.
+            ; If the second operand is zero, the first operand is non-zero, and the result is the first operand.
 HANDLEZERO: CLR R16                     ;
             OR R16,MANTA0               ;
             OR R16,MANTA1               ;
             OR R16,MANTA2               ;
             OR R16,EXPA0                ; A=0?
-            BREQ SETZERO                ; Да, и A и B равны нулю, возвращаем ноль.
+            BREQ SETZERO                ; Yes, both A and B are zero; return zero.
 
-            CLR R16                     ; Нет, проверяем B.
+            CLR R16                     ; No, check B.
             OR R16,MANTB0               ;
             OR R16,MANTB1               ;
             OR R16,MANTB2               ;
             OR R16,EXPB0                ; B=0?
-            BREQ EXIT                   ; Да, возвращаем A (A уже находится в регистре результата).
-                                        ; Нет, ни A ни B не равны нулю, продолжаем вычисления.
+            BREQ EXIT                   ; Yes, return A (A is already in the result register).
+                                        ; No, neither A nor B is zero; continue the calculations.
 
             ;
-            ; Определение знака суммы.
+            ; Determine the sign of the sum.
             ;
-            ; Берется знак операнда A, который после свопа удовлетворяет выражению |A|>=|B|.
-            ; Если |A|>|B| и знаки разные, то знак разности равен знаку наибольшего (по модулю) операнда, т.е. A.
-            ; Если же знаки одинаковые, то знак суммы равен знаку любого операнда, в т.ч. A.
-            ; Если |A|=|B| и знаки одинаковые, то знак суммы также равен знаку любого операнда, в т.ч. A.
-            ; Если же знаки разные, то в силу равенства модулей, разность будет равна нулю и будет установлен положительный знак, независимо от знаков A и B.
-CALCSIGN:   MOV RSIGN,R11               ; Копируем старший байт A.
-            LDI R16,0b10000000          ; Формируем маску для извлечения знака, который хранится в MSB.
-            AND RSIGN,R16               ; Извлекаем знак A.
+            ; Take the sign of operand A, which, after the swap, satisfies the expression |A|>=|B|.
+            ; If |A|>|B| and the signs are different, then the sign of the difference is equal to the sign of the largest (by absolute value) operand, i.e., A.
+            ; If the signs are the same, then the sign of the sum is equal to the sign of either operand, including A.
+            ; If |A|=|B| and the signs are the same, then the sign of the sum is also equal to the sign of either operand, including A.
+            ; If the signs are different, then due to the equality of the absolute values, the difference will be zero and a positive sign will be set, regardless of the signs of A and B.
+CALCSIGN:   MOV RSIGN,R11               ; Copy the high byte of A.
+            LDI R16,0b10000000          ; Create a mask to extract the sign stored in the MSB.
+            AND RSIGN,R16               ; Extract the sign of A.
 
             ;
-            ; Бэкап знака B.
+            ; Backup the sign of B.
             ; 
-            ; Он будет нужен для определения операции: сложение или вычитание.
-            MOV R1,R15                  ; Копируем старший байт B.
-            AND R1,R16                  ; Извлекаем знак B. Маска знака уже содержится в R16.
+            ; It will be needed to determine the operation: addition or subtraction.
+            MOV R1,R15                  ; Copy the high byte of B.
+            AND R1,R16                  ; Extract the sign of B. The sign mask is already stored in R16.
 
             ;
             ; Распаковка операндов.
