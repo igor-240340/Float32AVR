@@ -737,17 +737,17 @@ CALCSIGN:   MOV RSIGN,R11               ; Copy the high byte of A.
             AND R1,R16                  ; Extract the sign of B. The sign mask is already stored in R16.
 
             ;
-            ; Распаковка операндов.
-            ROL R8                      ; Распаковка A.
+            ; Unpack the operands.
+            ROL R8                      ; Unpack A.
             ROL R9                      ;
-            ROL R10                     ; Выдвигаем в бит переноса LSB экспоненты.
-            ROL R11                     ; Восстанавливаем экспоненту в старшем байте.
-            SEC                         ; Восстанавливаем в мантиссе A неявную единицу.
+            ROL R10                     ; Shift the LSB of the exponent into the carry bit.
+            ROL R11                     ; Restore the exponent in the high byte.
+            SEC                         ; Restore the implicit one in the mantissa of A.
             ROR R10                     ;
             ROR R9                      ;
             ROR R8                      ;
 
-            ROL R12                     ; Распаковка B
+            ROL R12                     ; Unpack B
             ROL R13                     ;
             ROL R14                     ;
             ROL R15                     ;
@@ -757,24 +757,24 @@ CALCSIGN:   MOV RSIGN,R11               ; Copy the high byte of A.
             ROR R12                     ;
 
             ;
-            ; Расширяем экспоненту A на один байт влево.
+            ; Extend the exponent of A by one byte to the left.
             CLR EXPA1                   ;
 
             ;
-            ; Расширение мантисс до RGS.
+            ; Extend the mantissas to RGS.
             ;
-            ; Эти регистры стыкуются справа от мантиссы A и B.
-            CLR R6                      ; RGS мантиссы A.
-            CLR R7                      ; RGS мантиссы B.
+            ; These registers are appended to the right of the mantissas of A and B.
+            CLR R6                      ; RGS of the mantissa of A.
+            CLR R7                      ; RGS of the mantissa of B.
 
             ;
-            ; Выравнивание порядков.
+            ; Align the exponents.
             ;
-            ; Экспоненты обоих операндов представлены в коде со смещением и принимают значения в отрезке [1,254].
-            ; После свопа порядок A будет либо больше либо равен порядку B. Это значит, что разность экспонент лежит в отрезке [0,253].
-            ; Из всего этого следует, что нет необходимости вычислять корректный доп. код в двойной сетке (см. обоснование в доке).
+            ; The exponents of both operands are biased and take values in the range [1,254].
+            ; After the swap, the exponent of A will be either greater than or equal to the exponent of B. This means that the difference of the exponents lies in the range [0,253].
+            ; From this, it follows that there is no need to calculate the correct two's complement in the double grid (see justification in the documentation).
             ;
-            ; Здесь может потребоваться окруление до S-бита при денормализации мантиссы B.
+            ; Rounding to the S-bit may be required when denormalizing the mantissa of B.
             MOV R17,EXPA0               ; Копируем экспоненту A.
             MOV R16,EXPB0               ; Копируем экспоненту B.
             COM R16                     ; Вычисляем псевдо доп. код экспоненты B.
