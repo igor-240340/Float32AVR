@@ -775,19 +775,19 @@ CALCSIGN:   MOV RSIGN,R11               ; Copy the high byte of A.
             ; From this, it follows that there is no need to calculate the correct two's complement in the double grid (see justification in the documentation).
             ;
             ; Rounding to the S-bit may be required when denormalizing the mantissa of B.
-            MOV R17,EXPA0               ; Копируем экспоненту A.
-            MOV R16,EXPB0               ; Копируем экспоненту B.
-            COM R16                     ; Вычисляем псевдо доп. код экспоненты B.
+            MOV R17,EXPA0               ; Copy the exponent of A.
+            MOV R16,EXPB0               ; Copy the exponent of B.
+            COM R16                     ; Calculate the lower byte of the two's complement of the exponent of B.
             INC R16                     ;
-            ADD R17,R16                 ; EXP(A)-EXP(B)=0? R17 теперь содержит разность экспонент в отрезке [1,253].
-            BREQ CHOOSEOP               ; Да, порядки равны, выравнивание не требуется.
-            LDI R16,31                  ; Нет, выясняем, в каком отрезке лежит разность: [1,30] или [31,253].
-            COM R16                     ; Формируем доп. код числа -31 в пределах байта. (Необходимости в двойной сетке нет. обоснование есть в доке).
+            ADD R17,R16                 ; EXP(A)-EXP(B)=0? [NOTE: R17 now contains the difference of the exponents in the range [0,253].]
+            BREQ CHOOSEOP               ; Yes, the exponents are equal; alignment is not required.
+            LDI R16,31                  ; No, determine which range the difference falls into: [1,30] or [31,253]. [NOTE: We've extended RGS on the whole byte.]
+            COM R16                     ; Form the two's complement of -31 within a byte. [NOTE: There is no need for a double grid.]
             INC R16                     ;
-            ADD R16,R17                 ; (EXP(A)-EXP(B))-31<0? (Если истинная разность в двойной сетке отрицательная, то бита переноса из младшего байта не будет).
-            BRCC SHIFTMANTB             ; Да, разность в отрезке [1,30], сдвигаем мантиссу B и формируем S-бит.
-            CLR MANTB0                  ; Нет, разность в отрезке [31,253].
-            CLR MANTB1                  ; Просто устанавливаем значение мантиссы B как 2^-31 (округление до S-бита).
+            ADD R16,R17                 ; (EXP(A)-EXP(B))-31<0? [NOTE: If the true difference in the double grid is negative, there will be no carry bit from the lower byte.]
+            BRCC SHIFTMANTB             ; Yes, the difference is in the range [1,30]; shift the mantissa of B and form the S-bit.
+            CLR MANTB0                  ; No, the difference is in the range [31,253];
+            CLR MANTB1                  ; set the value of the mantissa of B to 2^-31 (rounding to the S-bit).
             CLR MANTB2                  ;
             LDI R16,0b00000001          ;
             MOV R7,R16                  ;
