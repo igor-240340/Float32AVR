@@ -497,7 +497,7 @@ ROUNDPROD:  CLR GUARD
             LDI R16,1                   ; Therefore, the absence of a carry bit
             ADD MANTP0,R16              ; is used as an indicator
             LDI R16,0                   ; that there is at least one non-zero bit after the R-bit.
-            ADC MANTP1,R16              ; UPD: Of course, we could detect all zeroes
+            ADC MANTP1,R16              ; NOTE: Of course, we could detect all zeroes
             ADC MANTP2,R16              ; in a much simpler way using OR.
 
             IN R16,SREG                 ;
@@ -515,7 +515,7 @@ ROUNDPROD:  CLR GUARD
             CLR GUARD                   ; Interpret the register with RS bits as a number and form its two's complement.
             COM MANTP2                  ; The two's complement is formed in double range, as the single range is insufficient
             COM GUARD                   ; to represent the values 0b11000000 and 0b10000000 as negative in two's complement.
-            LDI R16,1                   ; UPD: In fact the single range is insufficent only to distinguish negative values
+            LDI R16,1                   ; NOTE: In fact the single range is insufficent only to distinguish negative values
             ADD MANTP2,R16              ; from positive ones. But when performing subtraction we can use carry bit as an
             LDI R16,0                   ; indication of the sign of the result, so we don't actually need to form two's
             ADC GUARD,R16               ; complement in the double range.
@@ -768,7 +768,7 @@ CALCSIGN:   MOV RSIGN,R11               ; Copy the high byte of A.
             CLR R7                      ; RGS of the mantissa of B.
 
             ;
-            ; Align the exponents.
+            ; Aligning the exponents.
             ;
             ; The exponents of both operands are biased and take values in the range [1,254].
             ; After the swap, the exponent of A will be either greater than or equal to the exponent of B. This means that the difference of the exponents lies in the range [0,253].
@@ -779,12 +779,12 @@ CALCSIGN:   MOV RSIGN,R11               ; Copy the high byte of A.
             MOV R16,EXPB0               ; Copy the exponent of B.
             COM R16                     ; Calculate the lower byte of the two's complement of the exponent of B.
             INC R16                     ;
-            ADD R17,R16                 ; EXP(A)-EXP(B)=0? [NOTE: R17 now contains the difference of the exponents in the range [0,253].]
+            ADD R17,R16                 ; EXP(A)-EXP(B)=0? NOTE: R17 now contains the difference of the exponents in the range [0,253].
             BREQ CHOOSEOP               ; Yes, the exponents are equal; alignment is not required.
-            LDI R16,31                  ; No, determine which range the difference falls into: [1,30] or [31,253]. [NOTE: We've extended RGS on the whole byte.]
-            COM R16                     ; Form the two's complement of -31 within a byte. [NOTE: There is no need for a double grid.]
+            LDI R16,31                  ; No, determine which range the difference falls into: [1,30] or [31,253]. NOTE: We've extended RGS on the whole byte.
+            COM R16                     ; Form the two's complement of -31 within a byte. NOTE: There is no need for a double grid.
             INC R16                     ;
-            ADD R16,R17                 ; (EXP(A)-EXP(B))-31<0? [NOTE: If the true difference in the double grid is negative, there will be no carry bit from the lower byte.]
+            ADD R16,R17                 ; (EXP(A)-EXP(B))-31<0? NOTE: If the true difference in the double grid is negative, there will be no carry bit from the lower byte.
             BRCC SHIFTMANTB             ; Yes, the difference is in the range [1,30]; shift the mantissa of B and form the S-bit.
             CLR MANTB0                  ; No, the difference is in the range [31,253];
             CLR MANTB1                  ; set the value of the mantissa of B to 2^-31 (rounding to the S-bit).
@@ -794,22 +794,22 @@ CALCSIGN:   MOV RSIGN,R11               ; Copy the high byte of A.
             RJMP CHOOSEOP               ;
 
             ;
-            ; Пошаговый сдвиг мантиссы B на разность экспонент вправо.
+            ; Shift the mantissa of B right step-by-step by the exponent difference.
             ;
-            ; Разность экспонент здесь принимает значения в отрезке [1,30].
-            ; Если за пределами RGS-зоны оказался хотя бы один единичный бит, то происходит установка S-бита.
-SHIFTMANTB: CLR R16                     ; R16 будет хранить в LSB значение бита переноса после каждого сдвига.
+            ; The exponent difference here takes values in the range [1,30].
+            ; If at least one bit outside the RGS zone is set to 1, the S-bit is set.
+SHIFTMANTB: CLR R16                     ; R16 will store the carry bit value in the LSB after each shift.
             CLC                         ;
-            ROR MANTB2                  ; Сдвигаем мантиссу b вправо на 1 разряд вместе с RGS-битами.
+            ROR MANTB2                  ; Shift the mantissa of B right by 1 bit along with the RGS bits.
             ROR MANTB1                  ;
             ROR MANTB0                  ;
             ROR R7                      ;
-            ROL R16                     ; Извлекаем бит переноса в R16.
-            OR R7,R16                   ; Если C!=0, значит за пределами RGS оказался единичный бит, значит устанавливаем S-бит.
+            ROL R16                     ; Extract the carry bit into R16.
+            OR R7,R16                   ; If C!=0, a non-zero bit exists outside the RGS, so set the S-bit.
 
-            DEC R17                     ; Мантисса B сдвинута на разность порядков?
-            BREQ CHOOSEOP               ; Да, переходим к выбору арифметической операции.
-            RJMP SHIFTMANTB             ; Нет, сдвигаем дальше.
+            DEC R17                     ; Is the mantissa of B shifted by the exponent difference?
+            BREQ CHOOSEOP               ; Yes, proceeding to select the arithmetic operation.
+            RJMP SHIFTMANTB             ; No, continue shifting.
 
             ;
             ; Выбор арифметической операции.
