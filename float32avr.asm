@@ -812,31 +812,31 @@ SHIFTMANTB: CLR R16                     ; R16 will store the carry bit value in 
             RJMP SHIFTMANTB             ; No, continue shifting.
 
             ;
-            ; Выбор арифметической операции.
+            ; Selection of the arithmetic operation.
 CHOOSEOP:   EOR R1,R0                   ; SIGN(A)=SIGN(B)?
-            BRNE DIFF                   ; Нет, знаки разные, переходим к вычитанию.
-                                        ; Да, вычисляем сумму.
+            BRNE DIFF                   ; No, signs differ, proceed to subtraction.
+                                        ; Yes, calculate the sum.
 
             ;
-            ; Вычисление суммы модулей мантисс.
+            ; Calculation of the sum of mantissa magnitudes.
             ;
-            ; Здесь возможно только переполнение результата.
-            ; Мантисса суммы записывается на место мантиссы A.
-SUM:        ADD R6,R7                   ; Складываем мантиссы A и B.
-            ADD R8,R12                  ; У мантиссы A RGS-зона всегда нулевая, поэтому бит переноса не возможен.
+            ; Only overflow is possible here.
+            ; The sum is written in place of mantissa A.
+SUM:        ADD R6,R7                   ; Add mantissas A and B.
+            ADD R8,R12                  ; The RGS zone of mantissa A is always zero, so a carry bit is not possible.
             ADC R9,R13                  ;
             ADC R10,R14                 ;
-                                        ; Переполнение есть?
-            BRCC ROUNDSUM               ; Нет, переходим к округлению.
-            ROR R10                     ; Да, нормализуем мантиссу вправо.
+                                        ; Is there an overflow?
+            BRCC ROUNDSUM               ; No, proceed to rounding.
+            ROR R10                     ; Yes, normalize the mantissa to the right.
             ROR R9                      ;
             ROR R8                      ;
             ROR R6                      ;
-            CLR R16                     ; Устанавливаем S-бит, если при нормализации был потерян единичный бит.
+            CLR R16                     ; Set the S-bit if a non-zero bit was lost during normalization.
             ROL R16                     ; 
             OR R6,R16                   ;
-            INC EXPA0                   ; Корректируем экспоненту. В худшем случае экспонента равна 254 поэтому бита переноса в старший байт не будет.
-            RJMP ROUNDSUM               ;
+            INC EXPA0                   ; Adjust the exponent.
+            RJMP ROUNDSUM               ; In the worst case, the exponent is already 254, so adding one will not produce a carry bit in the highest byte.
             
             ;
             ; Вычисление разности модулей мантисс.
