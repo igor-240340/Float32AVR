@@ -839,14 +839,15 @@ SUM:        ADD R6,R7                   ; Add mantissas A and B.
             RJMP ROUNDSUM               ; In the worst case, the exponent is already 254, so adding one will not produce a carry bit in the highest byte.
             
             ;
-            ; Вычисление разности модулей мантисс.
+            ; Calculation of the difference between mantissa magnitudes.
             ;
-            ; Здесь в худшем случае возможна денормализация результата вправо в отрезке [0,24]
-            ; При A=1 И B=((2^24)-1)*2^-23*2^-1.
-DIFF:       COM R7                      ; Вычисляем псевдо доп. код мантиссы B. Это дополнение до 2 вместо 4.
-            COM MANTB0                  ; Результат всегда положительный, поэтому нет необходимости в истинном доп. коде.
-            COM MANTB1                  ; В доп. бите слева всегда будет единица, а из младшей части всегда будет бит переноса,
-            COM MANTB2                  ; зануляющий разряд истинного доп. кода.
+            ; NOTE: In the worst case, denormalization of the result to the right may occur within the range [0,24] when A=1 and B=((2^24)-1)*2^-23*2^-1.
+            ; Assuming that after subtraction we could get a denormalization by more than 24 bits to the right (keeping in mind that the mantissa of A is always normalized),
+            ; the mantissa of B would need to have more than 24 bits, which is impossible.
+DIFF:       COM R7                      ; Calculate the pseudo two's complement of the mantissa B. This is a complement to 2 instead of 4.
+            COM MANTB0                  ; The result is always positive, so a true two's complement is not required: the most significant bit
+            COM MANTB1                  ; will always be 1, and the lower part will always generate a carry bit, zeroing out the MSB of the true two's complement.
+            COM MANTB2                  ;
             LDI R16,1                   ;
             ADD R7,R16                  ;
             CLR R16                     ;
