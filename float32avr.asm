@@ -855,20 +855,20 @@ DIFF:       COM R7                      ; Calculate the pseudo two's complement 
             ADC MANTB1,R16              ;
             ADC MANTB2,R16              ;
 
-            LDI SREGACC,0b00000010      ; Маска для Z-флага.
-            ADD R6,R7                   ; Складываем RGS-регистры.
-            IN R16,SREG                 ; Извлекаем из регистра статуса только Z-флаг.
+            LDI SREGACC,0b00000010      ; Mask for the Z-flag.
+            ADD R6,R7                   ; Add the RGS registers.
+            IN R16,SREG                 ; Extract only the Z-flag from the status register.
             AND SREGACC,R16             ;
-            ADD MANTA0,MANTB0           ; Складываем следующую пару байт мантисс. (У мантиссы A RGS-зона всегда нулевая, поэтому бит переноса из предыдущей операции не возможен.)
+            ADD MANTA0,MANTB0           ; Add the next pair of mantissa bytes. NOTE: Mantissa A always has a zeroed RGS zone, so no carry bit from the previous operation is possible.
             IN R16,SREG                 ;
             AND SREGACC,R16             ;
-            ADC MANTA1,MANTB1           ; Складываем следующую пару байт.
+            ADC MANTA1,MANTB1           ; Add the next pair of bytes.
             IN R16,SREG                 ;
             AND SREGACC,R16             ;
-            ADC MANTA2,MANTB2           ; Складываем последнюю пару байт.
+            ADC MANTA2,MANTB2           ; Add the next pair of bytes.
             IN R16,SREG                 ;
-            AND SREGACC,R16             ; Результат нулевой? (SREGACC=STATUS0^STATUS1^STATUS2^STATUS3^0b00000010, где STATUS<N>-регистр статуса после сложения очередной пары байт мантисс.)
-            BRNE SETZERO1               ; Да, устанавливаем положительный ноль. (Если флаг Z был установлен для каждой пары байт, то SREGACC окажется ненулевым).
+            AND SREGACC,R16             ; Is the result zero? NOTE: SREGACC=STATUS0&STATUS1&STATUS2&STATUS3&0b00000010, where STATUS<N> is the status register after adding another pair of mantissa bytes.
+            BRNE SETZERO1               ; Yes, set positive zero. NOTE: If the Z flag was set for each pair of bytes, SREGACC will be non-zero.
 
             SBRC MANTA2,7               ; Мантисса разности денормализована?
             RJMP ROUNDSUM               ; Нет, мантисса нормализована, переходим к округлению.
