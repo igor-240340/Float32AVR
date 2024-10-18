@@ -867,7 +867,7 @@ DIFF:       COM R7                      ; Calculate the pseudo two's complement 
             AND SREGACC,R16             ;
             ADC MANTA2,MANTB2           ; Add the next pair of bytes.
             IN R16,SREG                 ;
-            AND SREGACC,R16             ; Is the result zero? NOTE: SREGACC=STATUS0&STATUS1&STATUS2&STATUS3&0b00000010, where STATUS<N> is the status register after adding another pair of mantissa bytes.
+            AND SREGACC,R16             ; Is the result zero? NOTE: SREGACC=(STATUS0)&(STATUS1)&(STATUS2)&(STATUS3)&(0b00000010), where STATUS<N> is the status register after adding another pair of mantissa bytes.
             BRNE SETZERO1               ; Yes, set positive zero. NOTE: If the Z flag was set for each pair of bytes, SREGACC will be non-zero.
 
             SBRC MANTA2,7               ; Мантисса разности денормализована?
