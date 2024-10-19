@@ -870,21 +870,21 @@ DIFF:       COM R7                      ; Calculate the pseudo two's complement 
             AND SREGACC,R16             ; Is the result zero? NOTE: SREGACC=(STATUS0)&(STATUS1)&(STATUS2)&(STATUS3)&(0b00000010), where STATUS<N> is the status register after adding another pair of mantissa bytes.
             BRNE SETZERO1               ; Yes, set positive zero. NOTE: If the Z flag was set for each pair of bytes, SREGACC will be non-zero.
 
-            SBRC MANTA2,7               ; Мантисса разности денормализована?
-            RJMP ROUNDSUM               ; Нет, мантисса нормализована, переходим к округлению.
-                                        ; Да, выполняем нормализацию и коррекцию экспоненты.
-            CLR R16                     ; Счетчик степени денормализации.
-            LDI R17,255                 ; Шаг счетчика R17=-1. Формируем счетчик сразу в доп. коде.
+            SBRC MANTA2,7               ; Is the difference mantissa denormalized?
+            RJMP ROUNDSUM               ; No, the mantissa is normalized, proceed to rounding.
+                                        ; Yes, normalize and adjust the exponent.
+            CLR R16                     ; Accumulates the degree of denormalization.
+            LDI R17,255                 ; We increase the degree of denormalization by -1 getting its negative value directly in two's complement.
 NORM:       CLC                         ;
-            ROL R6                      ; Нормализуем влево.
+            ROL R6                      ; Normalize left.
             ROL MANTA0                  ;
             ROL MANTA1                  ;
             ROL MANTA2                  ;
-            ADD R16,R17                 ; DEC R16.
-            SBRS MANTA2,7               ; Мантисса разности нормализовалась?
-            RJMP NORM                   ; Нет, продолжаем сдвиг.
-            ADD EXPA0,R16               ; Да, корректируем экспоненту: EXPA-K, где K - степень денормализации.
-            ADC EXPA1,R17               ; R17,R16 - расширили доп. код R16 до двух байт (воспользовались тем, что R17 уже содержит 255).
+            ADD R16,R17                 ; DEC R16. NOTE: Of course we could use native DEC instruction.
+            SBRS MANTA2,7               ; Has the mantissa of the difference been normalized?
+            RJMP NORM                   ; No, continue shifting.
+            ADD EXPA0,R16               ; Yes, adjust the exponent: EXPA-K, where K=R16 is the degree of denormalization.
+            ADC EXPA1,R17               ; R17,R16: expanded the two's complement in R16 to two bytes, leveraging that R17 already holds the value 255.
 
             ;
             ; Округление.
