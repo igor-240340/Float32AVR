@@ -887,27 +887,27 @@ NORM:       CLC                         ;
             ADC EXPA1,R17               ; R17,R16: expanded the two's complement in R16 to two bytes, leveraging that R17 already holds the value 255.
 
             ;
-            ; Округление.
+            ; Rounding.
             ;
-            ; После сдвига R-бита происходит проверка C- И Z-битов в регистре статуса.
-            ; Если Z=0 после сдвига, то это ситуация симметричного округления, иначе - округление в большую сторону.
-ROUNDSUM:   MOV R16,R6                  ; Копируем RGS.
+            ; After shifting the R-bit left, the C and Z flags in the status register are checked.
+            ; If C=1 and Z=0 after the shift, it indicates halfway rounding; otherwise, it is rounding up.
+ROUNDSUM:   MOV R16,R6                  ; Copy RGS.
             CLC                         ;
-            ROL R16                     ; R-бит равен нулю?
-            BRCC CHECKEXP2              ; Да, RGS=000|001|010|011. Отбрасываем RGS, ошибка ERR<ULP/2.
-            BREQ HALFWAY1               ; Нет, RGS=ULP/2=100, симметричное округление.
-            LDI R16,1                   ; Нет, RGS=101|110|111.
-            RJMP ADDULP                 ; Отбрасываем RGS и прибавляем ULP. Ошибка ERR<ULP/2.
+            ROL R16                     ; Is the R-bit zero?
+            BRCC CHECKEXP2              ; Yes, RGS=000|001|010|011. Discard RGS, ERR<ULP/2.
+            BREQ HALFWAY1               ; No, RGS=100, halfway rounding, ERR=ULP/2.
+            LDI R16,1                   ; No, RGS=101|110|111.
+            RJMP ADDULP                 ; Discard RGS and add ULP. ERR<ULP/2.
 
-HALFWAY1:   LDI R16,1                   ; Извлекаем значение разряда ULP.
+HALFWAY1:   LDI R16,1                   ; Extract the value of the ULP bit.
             AND R16,R8                  ;
-ADDULP:     ADD R8,R16                  ; Прибавляем ULP.
-            CLR R16                     ; Если значение нечетное, то ULP=1, и результат станет четным.
-            ADC R9,R16                  ; Если значение уже четное, то ULP=0, и прибавление нуля не изменит результат.
-            ADC R10,R16                 ; Есть переполнение?
-            BRCC CHECKEXP2              ; Нет, переходим к проверке экспоненты.
-            ROR MANTA2                  ; Да, нормализуем мантиссу A. Поскольку переполнение при округлении, два младших байта мантиссы уже нулевые.
-            INC EXPA0                   ; Корректируем экспоненту. 
+ADDULP:     ADD R8,R16                  ; Add ULP.
+            CLR R16                     ; If the value is odd, adding ULP=1 makes the result even.
+            ADC R9,R16                  ; If the value is already even, ULP=0, and adding zero does not change the result.
+            ADC R10,R16                 ; Is there overflow?
+            BRCC CHECKEXP2              ; No, proceed to the exponent check.
+            ROR MANTA2                  ; Yes, normalize mantissa A. Since there was an overflow during rounding, the two least significant bytes of the mantissa are already zero.
+            INC EXPA0                   ; Adjust the exponent.
 
             ;
             ; Проверка экспоненты на переполнение/антипереполнение.
