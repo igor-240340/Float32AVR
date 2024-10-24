@@ -912,16 +912,16 @@ ADDULP:     ADD R8,R16                  ; Add ULP.
             ;
             ; Check the exponent for overflow/underflow.
             ;
-            ; Экспонента в коде со смещением принимает значения в отрезке [-22,255].
-            ; NOTE: Возьмем разность чисел A=1*2^-125 и B=((2^24)-1)*2^-23*2^-126.
-            ; Эта разность даст максимальную денормализацию вправо на 24 разряда.
-            ; Следовательно, после нормализации порядок разности будет равен -125-24=-149 или -149+127=-22 в коде со смещением.
-            ; Точно такой же вывод получим, взяв A=(1+2^-23)*2^-126 и B=1*2^-126.
+            ; The biased exponent ranges from -22 to 255.
+            ; NOTE: Consider the difference between A=1*2^-125 and B=((2^24)-1)*2^-23*2^-126.
+            ; This difference results in a maximum right denormalization of 24 bits.
+            ; Therefore, after normalization, the exponent of the difference will be equal to -125-24=-149 or -149+127=-22 in biased representation.
+            ; The same conclusion can be reached by taking A=(1+2^-23)*2^-126 and B=1*2^-126.
             ;
-            ; Если есть переполнение, то экспонента равна 255 и вычитание её из 255 даст ноль.
-            ; Если нет переполнения, то вычитание экспоненты из 255 даст положительное значение.
-            ; Если есть антипереполнение, то экспонента принимает значения в отрезке [-22,0] и вычитание единицы из экспоненты всегда даст отрицательное значение.
-            ; Если нет антипереполнения, то, поскольку переполнение уже исключено, экспонента лежит в [1,254] и вычитание единицы всегда даст положительное значение.
+            ; If there is an overflow, the exponent is 255, and subtracting it from 255 results in zero.
+            ; If there is no overflow, subtracting the exponent from 255 will yield a positive value.
+            ; If there is underflow, the exponent takes values in the range [-22,0], and subtracting one from the exponent will always yield a negative value.
+            ; If there is no underflow, then, since overflow is already excluded, the exponent lies in [1,254], and subtracting one will always yield a non-negative value.
 CHECKEXP2:  LDI R17,255                 ; Записываем 255 в два байта.
             LDI R18,0                   ;
 
