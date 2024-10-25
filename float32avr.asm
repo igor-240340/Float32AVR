@@ -922,48 +922,48 @@ ADDULP:     ADD R8,R16                  ; Add ULP.
             ; If there is no overflow, subtracting the exponent from 255 will yield a positive value.
             ; If there is underflow, the exponent takes values in the range [-22,0], and subtracting one from the exponent will always yield a negative value.
             ; If there is no underflow, then, since overflow is already excluded, the exponent lies in [1,254], and subtracting one will always yield a non-negative value.
-CHECKEXP2:  LDI R17,255                 ; Записываем 255 в два байта.
+CHECKEXP2:  LDI R17,255                 ; Write 255 into two bytes.
             LDI R18,0                   ;
 
-            MOV R21,EXPA0               ; Копируем расширенную экспоненту A.
+            MOV R21,EXPA0               ; Copy the extended exponent of A.
             MOV R22,EXPA1               ;
 
-            COM R21                     ; Вычисляем доп. код экспоненты в двух байтах.
-            COM R22                     ;
-            LDI R16,1                   ;
+            COM R21                     ; Calculate the two-byte two's complement of the exponent.
+            COM R22                     ; NOTE: We don't actually need extended two's complement:
+            LDI R16,1                   ; we could just check first byte of the result for zero and check the carry bit.
             ADD R21,R16                 ;
             CLR R16                     ;
             ADC R22,R16                 ;
 
             ADD R17,R21                 ; 255-EXP(A).
-            IN STATUS0,SREG             ; Сохраняем флаги после сложения младших байт.
+            IN STATUS0,SREG             ; Save flags after adding the lower bytes.
             ADC R18,R22                 ;
-            IN STATUS1,SREG             ; Сохраняем флаги после сложения старших байт.
+            IN STATUS1,SREG             ; Save flags after adding the higher bytes
 
-            AND STATUS0,STATUS1         ; Результат нулевой, если флаг Z был установлен для каждого байта.
-            SBRC STATUS0,SREG_Z         ; 255-EXP(A)=0?
-            IJMP                        ; Да, переполнение, прыжок на обработчик ошибок, указанный в регистре Z.
-            LDI R16,255                 ; Нет, проверяем на антипереполнение.
+            AND STATUS0,STATUS1         ; The result is zero if the Z flag was set for each byte.
+            SBRC STATUS0,SREG_Z         ; Is the exponent equal to 255?
+            IJMP                        ; Yes, overflow. Jump to error handler specified in register Z.
+            LDI R16,255                 ; No, check for underflow.
             LDI R17,255                 ;
             ADD R16,EXPA0               ; EXP(A)-1.
-            ADC R17,EXPA1               ; Результат отрицательный?
-            BRMI SETZERO1               ; Да, антипереполнение, экспонента лежит в [0,-22] и не представима. Возвращаем ноль.
-                                        ; Нет, экспонента лежит в [1,254] и представима в одинарном float.
+            ADC R17,EXPA1               ; Is the result negative?
+            BRMI SETZERO1               ; Yes, underflow; the exponent is in [0,-22] and cannot be represented. Flush to zero.
+                                        ; No, the exponent is in [1,254] and can be represented in single-precision float.
 
             ;
-            ; Упаковка суммы.
-            ROL MANTA0                  ; Выдвигаем целочисленную единицу мантиссы суммы в бит переноса.
+            ; Packing the sum.
+            ROL MANTA0                  ; Shift the integer one of the sum's mantissa into the carry bit.
             ROL MANTA1                  ;
             ROL MANTA2                  ;
-            ROL RSIGN                   ; Выдвигаем знак В бит переноса.
-            ROR EXPA0                   ; Вдвигаем знак в MSB экспоненты и выдвигаем LSB экспоненты в бит переноса.
-            ROR MANTA2                  ; Восстанавливаем исходные биты мантиссы,
-            ROR MANTA1                  ; вдвигая в MSB старшего байта мантиссы LSB экспоненты вместо целочисленной единицы.
+            ROL RSIGN                   ; Shift the sign bit into the carry bit.
+            ROR EXPA0                   ; Insert the sign bit into the MSB of the exponent and shift the LSB of the exponent into the carry bit.
+            ROR MANTA2                  ; Restore the original bits of the mantissa by shifting the LSB of the exponent into the MSB of the higher byte
+            ROR MANTA1                  ; of the mantissa instead of the integer one.
             ROR MANTA0                  ;
 
             RJMP EXIT1
             
-            ; Выход.
+            ; Exit from FADD32.
 EXIT1:      RET
 
             ;
