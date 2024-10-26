@@ -617,6 +617,7 @@ EXIT:       RET
             ; - Dividend is zero.
             ; - At least one multiplicand is zero.
             ; - Both addends are zero.
+            ; - The result of subtraction is zero.
 SETZERO:    CLR MANTA0
             CLR MANTA1
             CLR MANTA2
@@ -967,13 +968,14 @@ CHECKEXP2:  LDI R17,255                 ; Write 255 into two bytes.
 EXIT1:      RET
 
             ;
-            ; Установка результата в ноль.
+            ; Set the result to zero.
             ;
-            ; Выполняется в следующих случаях:
-            ; - Антипереполнение результата для любой операции.
-            ; - Делимое равно нулю.
-            ; - Хотя бы один сомножитель равен нулю.
-            ; - Оба слагаемых равны нулю.
+            ; Executed in the following cases:
+            ; - Underflow of the result for any operation.
+            ; - The dividend is zero.
+            ; - At least one multiplicand is zero.
+            ; - Both addends are zero.
+            ; - The result of subtraction is zero
 SETZERO1:   CLR MANTA0
             CLR MANTA1
             CLR MANTA2
@@ -981,15 +983,16 @@ SETZERO1:   CLR MANTA0
             RJMP EXIT1
 
 ;
-; Преобразует число в формате плавающей точки в целое.
+; Converts a floating-point number to an integer.
 ;
-; Работает только с положительными нормализованными десятичными числами в отрезке [1,10).
-; Таким образом, возвращает целочисленное значение в отрезке [1,9] в пределах байта.
+; Works only with positive normalized decimal numbers in the range [1,10).
+; Thus, it returns an integer value in the range [1,9] within a byte.
 ; 
-; Аргументы:
-;   - NUM - число, ожидается в регистрах: R11, R10, R9, R8.
+; Input:
+;   - R11, R10, R9, R8: A number NUM.
 ;
-; Результат: целая часть NUM. Помещается в R8.
+; Output:
+;   - R8: Integer part of NUM.
             .DEF A0=R8                  ;
             .DEF A1=R9                  ;
             .DEF A2=R10                 ;
