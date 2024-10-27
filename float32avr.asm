@@ -983,7 +983,7 @@ SETZERO1:   CLR MANTA0
             RJMP EXIT1
 
 ;
-; Converts a floating-point number to an integer.
+; Truncates a floating-point number to an integer.
 ;
 ; Works only with positive normalized decimal numbers in the range [1,10).
 ; Thus, it returns an integer value in the range [1,9] within a byte.
@@ -998,15 +998,15 @@ SETZERO1:   CLR MANTA0
             .DEF A2=R10                 ;
             .DEF A3=R11                 ;
 
-            .DEF STATUS=R21             ; Регистр статуса.
+            .DEF STATUS=R21             ; STATUS regiser.
 
-FTOI:       ROL A2                      ; Распаковываем num.
-            ROL A3                      ; A3=EXP(NUM). Поскольку num лежит в [1,10), то все биты целой части в нормализованной мантиссе
-            SEC                         ; полностью лежат в старшем байте мантиссы и нет необходимости сдвигать младшие.
+FTOI:       ROL A2                      ; Unpacking NUM.
+            ROL A3                      ; A3=EXP(NUM). Since NUM is in [1,10), all bits of the integer part of the true decimal value
+            SEC                         ; are entirely contained within the higher byte of the binary normalized mantissa, and there is no need to shift the lower bytes.
             ROR A2                      ;
            
-            CLR A0                      ; A0 не содержит битов целой части и нам не интересен. Он будет содержать целую часть десятичного значения NUM.
-            LDI R16,-127                ; A3=EXP(NUM)-127. Экспонента лежит в [127,127+3], значит разность всегда > 0, достаточно доп. кода в пределах байта.
+            CLR A0                      ; Only A2 contains all bits of the integer part of the true value, so we can use A0 for holding the resulting integer value.
+            LDI R16,-127                ; A3=EXP(NUM)-127. The exponent falls within [127,127+3], so the difference is always non-negative and it's enough to have two's complement within a byte.
             ADD A3,R16                  ; Экспонента нулевая? (Если нулевая, то целая часть мантиссы уже представляет истинную целую часть десятичного значения, которая равна единице.)
             BREQ SHFTMSB                ; Да, делаем финальный сдвиг.
             MOV R16,A3                  ; Нет, устанавливаем счетчик цикла и раскрываем экспоненту, денормализуя мантиссу влево.
