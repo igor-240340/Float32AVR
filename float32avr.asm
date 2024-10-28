@@ -1007,16 +1007,16 @@ FTOI:       ROL A2                      ; Unpacking NUM.
            
             CLR A0                      ; Only A2 contains all bits of the integer part of the true value, so we can use A0 for holding the resulting integer value.
             LDI R16,-127                ; A3=EXP(NUM)-127. The exponent falls within [127,127+3], so the difference is always non-negative and it's enough to have two's complement within a byte.
-            ADD A3,R16                  ; Экспонента нулевая? (Если нулевая, то целая часть мантиссы уже представляет истинную целую часть десятичного значения, которая равна единице.)
-            BREQ SHFTMSB                ; Да, делаем финальный сдвиг.
-            MOV R16,A3                  ; Нет, устанавливаем счетчик цикла и раскрываем экспоненту, денормализуя мантиссу влево.
-DENORM:     ROL A2                      ; A<<1
+            ADD A3,R16                  ; Is the exponent zero? (If zero, the integer part of the mantissa already represents the integer part of the true value, which is equal to one.)
+            BREQ SHFTMSB                ; Yes, perform the final shift.
+            MOV R16,A3                  ; No, set the loop counter and denormalize the mantissa to the left.
+DENORM:     ROL A2                      ; MANT(A)<<1
             ROL A0                      ;
-            DEC R16                     ; Мантисса денормализована влево на величину экспоненты?
-            BREQ SHFTMSB                ; Да, делаем финальный сдвиг.
-            RJMP DENORM                 ; Нет, продолжаем сдвиг.
+            DEC R16                     ; Is the mantissa denormalized to the left by the value of the exponent?
+            BREQ SHFTMSB                ; Yes, perform the final shift.
+            RJMP DENORM                 ; No, continue shifting.
 
-SHFTMSB:    ROL A2                      ; A0=INT(NUM). (MSB мантиссы содержит LSB истинной целой части - выдвигаем его в A0.)
+SHFTMSB:    ROL A2                      ; A0=INT(NUM). (The MSB of the mantissa contains the LSB of the true integer part - shift it into A0.)
             ROL A0                      ;
 
             RET
