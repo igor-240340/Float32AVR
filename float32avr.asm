@@ -1009,31 +1009,32 @@ FTOI:       ROL A2                      ; Unpacking NUM.
             LDI R16,-127                ; A3=EXP(NUM)-127. The exponent falls within [127,127+3], so the difference is always non-negative and it's enough to have two's complement within a byte.
             ADD A3,R16                  ; Is the exponent zero? (If zero, the integer part of the mantissa already represents the integer part of the true value, which is equal to one.)
             BREQ SHFTMSB                ; Yes, perform the final shift.
-            MOV R16,A3                  ; No, set the loop counter and denormalize the mantissa to the left.
+            MOV R16,A3                  ; No, set the loop counter to the exponent value and denormalize the mantissa to the left.
 DENORM:     ROL A2                      ; MANT(A)<<1
             ROL A0                      ;
             DEC R16                     ; Is the mantissa denormalized to the left by the value of the exponent?
             BREQ SHFTMSB                ; Yes, perform the final shift.
             RJMP DENORM                 ; No, continue shifting.
 
-SHFTMSB:    ROL A2                      ; A0=INT(NUM). (The MSB of the mantissa contains the LSB of the true integer part - shift it into A0.)
+SHFTMSB:    ROL A2                      ; A0=INT(NUM). (The MSB of the mantissa contains the LSB of the integer part of the true value - shift it into A0.)
             ROL A0                      ;
 
             RET
 
 ;
-; Преобразует однобайтовое целое число в число в формате плавающей точки.
+; Converts a one-byte integer to a floating-point number.
 ;
-; Аргументы:
-;   - NUM - целое число, ожидается в регистре R8.
+; Input:
+;   - R8: Integer value NUM.
 ;
-; Результат: число в формате плавающей точки, помещается в R11, R10, R9, R8.
+; Output: 
+;   - R11, R10, R9, R8: Floating-point representation of NUM.
             .DEF A0=R8                  ;
             .DEF A1=R9                  ;
             .DEF A2=R10                 ;
             .DEF A3=R11                 ;
 
-            .DEF STATUS=R21             ; Регистр статуса.
+            .DEF STATUS=R21             ; STATUS register.
 
 SETZERO3:   CLR A0                      ; A=0.0F.
             CLR A1                      ;
@@ -1042,17 +1043,17 @@ SETZERO3:   CLR A0                      ; A=0.0F.
             RET                         ;
 
 ITOF:       AND A0,A0                   ; NUM=0?
-            BREQ SETZERO3               ; Да, возвращаем 0.0F.
+            BREQ SETZERO3               ; Yes, return 0.0f.
 
-            CLR A1                      ; Младшие байты мантиссы.
+            CLR A1                      ; Lower bytes of the mantissa.
             CLR A2                      ;
-            LDI R16,-1                  ; Байт экспоненты. Инициализируем в -1 для холостого инкремента при первом сдвиге.
-            MOV A3,R16                  ;
+            LDI R16,-1                  ; Exponent byte. Initialize to -1 for a dummy increment during the first shift.
+            MOV A3,R16                  ; NOTE: The first shift does not change the weight of the LSB of the true integer value.
 
-            CLC                         ; A2 нулевой, поэтому последний сдвиг A2 всегда зануляет бит переноса - очищать на каждой итерации не нужно.
-NORM0:      INC A3                      ; Совмещаем LSB целого числа с MSB мантиссы,
-            ROR A0                      ; получая, по сути, денормализованную влево мантиссу.
-            IN STATUS,SREG              ; Запоминаем флаг Z для A0.
+            CLC                         ; A2 is zero, so the final shift of A2 always clears the carry bit and there is no need to clear it on each iteration.
+NORM0:      INC A3                      ; Combine the LSB of the integer with the MSB of the mantissa,
+            ROR A0                      ; effectively producing a left-denormalized mantissa.
+            IN STATUS,SREG              ; Save the Z flag for A0.
             ROR A2                      ; 
             SBRS STATUS,SREG_Z          ; Мантисса нормализована? (если изначально A0=1, то он занулится, а мантисса сразу окажется нормализованной.)
             RJMP NORM0                  ; Нет, продолжаем нормализацию.
