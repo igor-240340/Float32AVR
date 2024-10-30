@@ -1022,7 +1022,7 @@ SHFTMSB:    ROL A2                      ; A0=INT(NUM). (The MSB of the mantissa 
             RET
 
 ;
-; Converts a one-byte integer to a floating-point number.
+; Converts a positive one-byte integer to a floating-point number.
 ;
 ; Input:
 ;   - R8: Integer value NUM.
@@ -1055,32 +1055,32 @@ NORM0:      INC A3                      ; Combine the LSB of the integer with th
             ROR A0                      ; effectively producing a left-denormalized mantissa.
             IN STATUS,SREG              ; Save the Z flag for A0.
             ROR A2                      ; 
-            SBRS STATUS,SREG_Z          ; Мантисса нормализована? (если изначально A0=1, то он занулится, а мантисса сразу окажется нормализованной.)
-            RJMP NORM0                  ; Нет, продолжаем нормализацию.
-                                        ; Да, пакуем float.
-            LDI R16,127                 ; Сохраняем экспоненту в коде со смещением.
+            SBRS STATUS,SREG_Z          ; Is the mantissa normalized? (If A0 initially equals 1, it will zero out, and the mantissa will be immediately normalized.)
+            RJMP NORM0                  ; No, continue normalization.
+                                        ; Yes, proceed to packing.
+            LDI R16,127                 ; Make the exponent biased.
             ADD A3,R16                  ;
 
-                                        ; Убираем у мантиссы целочисленную единицу.
-            ROL A2                      ; Входное число размером в байт, поэтому все ненулевые биты уже вмещаются в A2, а A0 И A1 РАВНЫ НУЛЮ.
+                                        ; Remove the integer one from the mantissa.
+            ROL A2                      ; The input number fits within one byte, so all non-zero bits are already in A2, while A0 and A1 are set to zero.
 
-            CLC                         ; Результат будет положительным - разряд знака нулевой.
-            ROR A3                      ; Придвигаем экспоненту к мантиссе без единицы.
+            CLC                         ; The result will be positive – the sign bit is zero.
+            ROR A3                      ; Shift the exponent close to the mantissa without the integer one.
 
-            ROR A2                      ; Размещаем LSB экспоненты в MSB мантиссы.
+            ROR A2                      ; Place the LSB of the exponent into the MSB of the mantissa.
 
             RET
 
 ;
-; Конвертирует нормализованное десятичное число в формате float в ASCII-строку.
+; Converts a normalized decimal number in float format to an ASCII string.
 ;
-; В основе лежит алгоритм, реализованный в z88dk, но с упрощениями для поддержки только нормализованных десятичных чисел.
+; Based on a naive algorithm implemented in z88dk, but simplified to support only normalized decimal numbers.
 ; [https://github.com/z88dk/z88dk/blob/aa60b9c9e4bab3318b9b10e919919058a4d3aaee/libsrc/math/cimpl/ftoa.c]
 ;
-; Основная идея алгоритма - мы игнорируем тот факт, что десятичное представление
+; Основная идея алгоритма: мы игнорируем тот факт, что десятичное представление
 ; исходной двоичной дроби искажается при её масштабировании.
 ; следствие этого допущения - не все десятичные цифры в строке оказываются истинными.
-; при округлении десятичного строкового представления разряды просто отбрасываются.
+; При округлении десятичного строкового представления разряды просто отбрасываются.
 ;
 ; аргументы:
 ;   - NUM - число, ожидается в регистрах: R11, R10, R9, R8.
