@@ -1072,21 +1072,23 @@ NORM0:      INC A3                      ; Combine the LSB of the integer with th
             RET
 
 ;
-; Converts a normalized decimal number in float format to an ASCII string.
+; Converts a normalized decimal number in floating-point representation to an ASCII string.
 ;
 ; Based on a naive algorithm implemented in z88dk, but simplified to support only normalized decimal numbers.
 ; [https://github.com/z88dk/z88dk/blob/aa60b9c9e4bab3318b9b10e919919058a4d3aaee/libsrc/math/cimpl/ftoa.c]
 ;
-; Основная идея алгоритма: мы игнорируем тот факт, что десятичное представление
-; исходной двоичной дроби искажается при её масштабировании.
-; следствие этого допущения - не все десятичные цифры в строке оказываются истинными.
-; При округлении десятичного строкового представления разряды просто отбрасываются.
+; Main idea of the algorithm: we ignore the fact that the decimal representation of the original binary fraction is distorted when it is scaled.
+; As a result, not all decimal digits in the string are exact.
+; Furthermore, when rounding the decimal string representation, digits are simply truncated.
 ;
-; аргументы:
-;   - NUM - число, ожидается в регистрах: R11, R10, R9, R8.
-;   - PRECISION - количество цифр после точки, ожидается в регистре R12.
-;   - STR - указатель на область SRAM, куда будет записана ASCII-строка, ожидается в XH:XL.
-            .EQU TEN0=0x00              ; 10.0F.
+; Input:
+;   - R11, R10, R9, R8: Floating-point number NUM within the range [1,10).
+;   - R12: Number of required digits PRECISION in the string after the decimal point.
+;   - XH:XL: Pointer STR to the SRAM location where the ASCII string representation of the number will be stored.
+;
+; Output:
+;   - XH:XL: ASCII string representation STR of the number.
+            .EQU TEN0=0x00              ; 10.0f.
             .EQU TEN1=0x00              ;
             .EQU TEN2=0x20              ;
             .EQU TEN3=0x41              ;
