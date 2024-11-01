@@ -1093,18 +1093,18 @@ NORM0:      INC A3                      ; Combine the LSB of the integer with th
             .EQU TEN2=0x20              ;
             .EQU TEN3=0x41              ;
 
-            .DEF A0=R8                  ; Первый операнд любой арифметической операции: FDIV32,FMUL32,FADD32,FSUB32.
+            .DEF A0=R8                  ; The first operand of any arithmetic operation: FDIV32,FMUL32,FADD32,FSUB32.
             .DEF A1=R9                  ;
             .DEF A2=R10                 ;
             .DEF A3=R11                 ;
 
-            .DEF B0=R12                 ; Второй операнд любой арифметической операции: FDIV32,FMUL32,FADD32,FSUB32.
+            .DEF B0=R12                 ; The second operand of any arithmetic operation: FDIV32,FMUL32,FADD32,FSUB32.
             .DEF B1=R13                 ;
             .DEF B2=R14                 ;
             .DEF B3=R15                 ;
 
             ;
-            ; Формирование строки "0" в случае, когда NUM=0.0F.
+            ; Form the string "0" if NUM = 0.0f.
 SETZERO2:   LDI R16,0x30                ;
             ST X+,R16                   ; *STR++='0'.
             RJMP EXITFTOAN              ;
@@ -1114,20 +1114,20 @@ FTOAN:      CLR R16                     ;
             OR R16,A1                   ;
             OR R16,A2                   ;
             OR R16,A3                   ; NUM=0?
-            BREQ SETZERO2               ; Да, формируем фиксированную строку "0.0".
+            BREQ SETZERO2               ; Yes, form a fixed string "0".
 
-            PUSH R12                    ; Бэкапим PRECISION, т.к. он находится в одном из входных регистров арифметических операций.
+            PUSH R12                    ; Backup PRECISION, as it is located in one of the input registers for arithmetic operations.
 
-            LDI R16,0b10000000          ; Извлекаем знак NUM.
+            LDI R16,0b10000000          ; Extract the sign of NUM.
             AND R16,A3                  ; NUM>0?
-            BREQ GETINT                 ; Да, NUM уже положительный, продолжаем.
-            EOR A3,R16                  ; Нет, вычисляем модуль NUM=|NUM| И
-            LDI R16,0x2D                ; Начинаем строку со знака '-'.
+            BREQ GETINT                 ; Yes, NUM is positive, continue.
+            EOR A3,R16                  ; No, calculate the absolute value NUM=|NUM| and
+            LDI R16,0x2D                ; start the string with the '-' sign.
             ST X+,R16                   ; *STR++='-'.
 
             ;
-            ; Извлечение цифры целой части.
-GETINT:     PUSH A3                     ; Бэкапим исходный NUM.
+            ; Extract the decimal digit of the integer part.
+GETINT:     PUSH A3                     ; Backup NUM=|NUM|.
             PUSH A2                     ;
             PUSH A1                     ;
             PUSH A0                     ;
@@ -1137,19 +1137,19 @@ GETINT:     PUSH A3                     ; Бэкапим исходный NUM.
             ADD R16,A0                  ;
             ST X+,R16                   ;
 
-            CALL ITOF                   ; A=FDIGIT=FLOAT(DIGIT). Извлеченную цифру имеем теперь не как целое, а как число в float32.
+            CALL ITOF                   ; A=FDIGIT=FLOAT(DIGIT). The extracted digit is now stored as a float32 number, not an integer.
 
             MOV B0,A0                   ; B=A=FDIGIT.
             MOV B1,A1                   ;
             MOV B2,A2                   ;
             MOV B3,A3                   ;
 
-            POP A0                      ; A=NUM.
+            POP A0                      ; A=NUM=|NUM|.
             POP A1                      ;
             POP A2                      ;
             POP A3                      ;
 
-            CALL FSUB32                 ; A=NUM=FSUB32(NUM,FDIGIT). Теперь из NUM удален целочисленный десятичный разряд, цифру которого мы извлекли.
+            CALL FSUB32                 ; A=NUM=FSUB32(NUM,FDIGIT). Now the integer decimal digit has been removed from NUM, the digit we just extracted.
 
             ;
             ; Добавление десятичной точки.
