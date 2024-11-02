@@ -1152,17 +1152,17 @@ GETINT:     PUSH A3                     ; Backup NUM=|NUM|.
             CALL FSUB32                 ; A=NUM=FSUB32(NUM,FDIGIT). Now the integer decimal digit has been removed from NUM, the digit we just extracted.
 
             ;
-            ; Добавление десятичной точки.
+            ; Adding the decimal point to the string.
             LDI R16,0x2E                ; *STR++='.'.
             ST X+,R16                   ;
 
             ;
-            ; Извлечение дробных десятичных разрядов.
+            ; Extracting fractional decimal digits.
             ;
-            ; Входное значение NUM<1.
+            ; Input value NUM<1.
             ; Двоичная экспонента после умножения на 10 лежит в [-123,3]
             ; или [4,130] в коде со смещением.
-GETFRAC:    LDI R16,TEN0                ; B=10.0F.
+GETFRAC:    LDI R16,TEN0                ; B=10.0f.
             LDI R17,TEN1                ;
             LDI R18,TEN2                ;
             LDI R19,TEN3                ;
