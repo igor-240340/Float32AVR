@@ -1160,11 +1160,11 @@ GETINT:     PUSH A3                     ; Backup NUM=|NUM|.
             ; Extracting fractional decimal digits.
             ;
             ; Input value NUM<1.
-            ; NOTE: Минимальное десятичное нормализованное число NUM=2^0=1.
-            ; Максимальное нормализованное NUM=(2^3+2^1)-(2^-23*2^3)=10-2^-20=9.99999904632568359375f.
-            ; Минимальное нормализованное, которое даст ненулевое значение после извлечения целой части равно 2^0+2^-23.
-            ; Таким образом, двоичная экспонента после извлечения целой части лежит в [-23,-1] или [104,126].
-            ; А после умножения на 10 экспонента лежит в [-20,3] или [107,130] в коде со смещением.
+            ; NOTE: The minimum normalized decimal number NUM=2^0=1.
+            ; The maximum normalized number NUM=(2^3+2^1)-(2^-23*2^3)=10-2^-20=9.99999904632568359375f.
+            ; The minimum normalized value that will yield a non-zero result after extracting the integer part is 2^0+2^-23.
+            ; Thus, the binary exponent after extracting the integer part lies in the range [-23,-1] or [104,126] in biased form.
+            ; And after multiplying by 10, the exponent lies in the range [-20,3] or [107,130] in biased form.
 GETFRAC:    LDI R16,TEN0                ; B=10.0f.
             LDI R17,TEN1                ;
             LDI R18,TEN2                ;
@@ -1174,19 +1174,19 @@ GETFRAC:    LDI R16,TEN0                ; B=10.0f.
             MOV B2,R18                  ;
             MOV B3,R19                  ;
 
-            CALL FMUL32                 ; A=NUM'=FMUL32(NUM,10.0f). После GETINT: A=NUM,NUM<1.
+            CALL FMUL32                 ; A=NUM'=FMUL32(NUM,10.0f). After GETINT: A=NUM,NUM<1.
 
-            PUSH A3                     ; Бэкапим NUM' поскольку далее будем распаковывать его экспоненту.
+            PUSH A3                     ; Back up NUM' as we'll be unpacking its exponent next.
             PUSH A2                     ;
             PUSH A1                     ;
             PUSH A0                     ;
 
-            ROL A2                      ; Если число после извлечения целой части и умножения на 10 все еще меньше единицы,
-            ROL A3                      ; то экспонента будет лежать в [-20,-1] или [107,126] в коде со смещением. Таким образом,
-            LDI R16,-127                ; сумма с доп. кодом числа -127 в пределах байта не даст переноса, что означает, что истинная экспонента отрицательная и число меньше единицы (целая часть нулевая).
-            ADD R16,A3                  ; NUM' лежит в [0,1)? (Если NUM' равен нулю, то поле экспоненты также равно нулю, что также даст отрицательную разность, поэтому это условие оказывается уже покрытым.)
-            BRCS ASCIIDIG1              ; Нет, в целой части ненулевой десятичный дробный разряд, определяем его цифру.
-            LDI R16,0x30                ; Да, очередной дробный разряд нулевой, устанавливаем цифру ноль.
+            ROL A2                      ; If the number remains less than one after extracting the integer part and multiplying by 10,
+            ROL A3                      ; the exponent will lie in [-20,-1] or [107,126] in biased form. Therefore,
+            LDI R16,-127                ; adding the two's complement of -127 within a byte will not produce a carry, indicating that the true exponent is negative, and the number is less than one (the integer part is zero).
+            ADD R16,A3                  ; NUM' is in [0,1)? (If NUM' is zero, the exponent field is also zero, which will result in a negative difference so this condition is already covered.)
+            BRCS ASCIIDIG1              ; No, in the integer part of NUM', there is a non-zero decimal fractional digit, extract it.
+            LDI R16,0x30                ; Yes, the next fractional digit is zero, setting the digit to zero.
             ST X+,R16                   ; *STR++='0'.
 
             POP A0                      ; A=NUM'.
