@@ -1190,20 +1190,20 @@ GETFRAC:    LDI R16,TEN0                ; B=10.0f.
             ST X+,R16                   ; *STR++='0'.
 
             POP A0                      ; A=NUM'.
-            POP A1                      ; Восстанавливаем состояние, ожидаемое в COND1.
-            POP A2                      ; В стеке - PRECISION.
+            POP A1                      ; Restoring the state expected in COND1.
+            POP A2                      ; Now PRECISION is at the top of the stack.
             POP A3                      ;
 
             RJMP COND1                  ;
 
-ASCIIDIG1:  POP A0                      ; A=NUM', сейчас NUM' - десятичная нормализованная дробь.
-            POP A1                      ; Восстанавливаем исходное значение,
-            POP A2                      ; не поврежденное распаковкой экспоненты.
+ASCIIDIG1:  POP A0                      ; A=NUM', now NUM' is a normalized decimal fraction.
+            POP A1                      ; Restore the original value,
+            POP A2                      ; unaffected by the exponent unpacking.
             POP A3                      ;
 
-            PUSH A3                     ; Снова бэкапим NUM',
-            PUSH A2                     ; поскольку далее нам нужно будет
-            PUSH A1                     ; удалить из него целую часть.
+            PUSH A3                     ; Backup NUM' again,
+            PUSH A2                     ; as we will need to remove
+            PUSH A1                     ; the integer part from it next.
             PUSH A0                     ;
 
             CALL FTOI                   ; A0=DIGIT=INT(NUM').
@@ -1224,17 +1224,17 @@ ASCIIDIG1:  POP A0                      ; A=NUM', сейчас NUM' - десят
             POP A2                      ;
             POP A3                      ;
 
-                                        ; Вычитаем извлеченный дробный разряд из целой части NUM'.
-            CALL FSUB32                 ; A=NUM=FSUB32(NUM',FDIGIT). Теперь снова NUM<1.
+                                        ; Subtract the extracted fractional digit from the integer part of NUM'.
+            CALL FSUB32                 ; A=NUM=FSUB32(NUM',FDIGIT). Now again, NUM<1.
 
 COND1:      POP R16                     ; R16=PRECISION.
-            DEC R16                     ; PRECISION--. Извлекли заданное число дробных разрядов?
-            BREQ EXITFTOAN              ; Да, STR содержит десятичные цифры числа NUM, стек - адрес возврата.
-            PUSH R16                    ; Нет, снова бэкапим PRECISION и
-            RJMP GETFRAC                ; извлекаем следующий десятичный дробный разряд.
+            DEC R16                     ; PRECISION--. Did we extract the specified number of fractional digits?
+            BREQ EXITFTOAN              ; Yes, STR contains the decimal digits of the number NUM, the stack holds the return address.
+            PUSH R16                    ; No, we back up PRECISION again and
+            RJMP GETFRAC                ; extract the next decimal fractional digit.
 
 EXITFTOAN:  LDI R16,0                   ;
-            ST X,R16                    ; Добавляем конец строки '\0'.
+            ST X,R16                    ; Add the end of the line '\0'.
             RET
 
 ;
