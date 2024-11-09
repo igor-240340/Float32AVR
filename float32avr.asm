@@ -1238,19 +1238,22 @@ EXITFTOAN:  LDI R16,0                   ;
             RET
 
 ;
-; Формирует ASCII-строку с десятичным представлением переменной типа float в экспоненциальной форме.
+; Forms an ASCII string with the decimal representation of a float variable in exponential form.
 ;
-; Если число уже нормализовано десятично, то просто выполняется конвертация в строку через FTOAN
-; с учётом ограничения на максимальную длину строки MAXLEN.
+; If the number is already decimal-normalized, conversion to a string is simply performed via FTOAN,
+; considering the maximum string length limit MAXLEN.
 ;
-; Иначе выполняется десятичная нормализация числа, затем происходит конвертация нормализованного числа
-; в строку через FTOAN, но с ограниченным количеством знаков после точки, таким, чтобы длина результирующей
-; строки (вместе со знаком минуса, десятичной точкой и экспонентой) не превысила MAXLEN.
+; Otherwise, decimal normalization of the number is performed, followed by conversion of the normalized number
+; to a string via FTOAN, with a limited number of digits after the decimal point to ensure that the total
+; length of the resulting string (including the minus sign, decimal point, and exponent) does not exceed MAXLEN.
 ;
-; Аргументы:
-;   - NUM - число, ожидается в регистрах: R11, R10, R9, R8.
-;   - MAXLEN - максимальная длина выходной строки, ожидается в регистре R12. Сейчас ожидается значение 16 - кол-во символов в LCD1602.
-;   - STR - указатель на область SRAM, куда будет записана ASCII-строка. ожидается в XH:XL.
+; Input:
+;   - R11, R10, R9, R8: The floating-point number NUM.
+;   - R12: The maximum output string length MAXLEN. Currently expected to be 16, matching the character limit of the LCD1602.
+;   - XH:XL: Pointer STR to the SRAM area where the ASCII string will be stored.
+;
+; Output:
+;   - XH:XL: ASCII string located at address XH:XL.
             .DEF EXP=R0                 ; Показатель степени в экспоненциальной записи.
 
             .DEF A0=R8                  ; Первый операнд любой арифметической операции: FDIV32,FMUL32,FADD32,FSUB32.
