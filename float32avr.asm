@@ -1254,38 +1254,38 @@ EXITFTOAN:  LDI R16,0                   ;
 ;
 ; Output:
 ;   - XH:XL: ASCII string located at address XH:XL.
-            .DEF EXP=R0                 ; Показатель степени в экспоненциальной записи.
+            .DEF EXP=R0                 ; Binary exponent value.
 
-            .DEF A0=R8                  ; Первый операнд любой арифметической операции: FDIV32,FMUL32,FADD32,FSUB32.
-            .DEF A1=R9                  ; Также - входной операнд NUM.
+            .DEF A0=R8                  ; First operand of any arithmetic operation: FDIV32,FMUL32,FADD32,FSUB32.
+            .DEF A1=R9                  ; It also holds NUM value.
             .DEF A2=R10                 ;
             .DEF A3=R11                 ;
 
-            .DEF MAXLEN=R12             ; Максимальная длина выходной строки с десятичным представлением NUM.
+            .DEF MAXLEN=R12             ; Maximum length of the output string with the decimal representation of NUM.
 
-            .DEF B0=R12                 ; Второй операнд любой арифметической операции: FDIV32,FMUL32,FADD32,FSUB32.
+            .DEF B0=R12                 ; Second operand of any arithmetic operation: FDIV32,FMUL32,FADD32,FSUB32.
             .DEF B1=R13                 ;
             .DEF B2=R14                 ;
             .DEF B3=R15                 ;
 
-            .DEF TMP0=R22               ; Может быть использован для временного хранения float32.
+            .DEF TMP0=R22               ; Can be used for temporary storage of a float32 value.
             .DEF TMP1=R23               ;
             .DEF TMP2=R24               ;
             .DEF TMP3=R25               ;
             
-FTOAE:      PUSH MAXLEN                 ; Бэкапим MAXLEN.
+FTOAE:      PUSH MAXLEN                 ; Back up MAXLEN.
 
             CLR EXP                     ; EXP=0.
 
-            PUSH A3                     ; Бэкапим старшие два байта NUM.
+            PUSH A3                     ; Back up the two most significant bytes of NUM.
             PUSH A2                     ;
-            ROL A2                      ; Распаковываем экспоненту NUM.
+            ROL A2                      ; Unpack the exponent of NUM.
             ROL A3                      ;
             LDI R16,-127                ;
             ADD R16,A3                  ;
-            POP A2                      ; Восстанавливаем старшие два байта NUM вместо тех, которые "пострадали" при распаковке экспоненты.
-            POP A3                      ; Экспонента в коде со смещением лежит в [1,126]? 
-            BRMI NORMLFT                ; Да, значит истинная экспонента лежит в [-126,-1], а это значит, что NUM<1 и INT(NUM)=0 - нормализуем влево.
+            POP A2                      ; Restore the higher two bytes of NUM, replacing those that were modified during the unpacking of the exponent.
+            POP A3                      ; Is the biased exponent in [1,126]?
+            BRMI NORMLFT                ; Yes, this means the true exponent is in the range [-126,-1], which means NUM<1 and INT(NUM)=0 - normalize to the left.
 
 NORMRGHT:   PUSH A3                     ; Нет, NUM>=1, значит NUM либо уже нормализован, либо денормализован влево (тогда нормализуем вправо).
             PUSH A2                     ; Бэкапим текущее значение NUM.
