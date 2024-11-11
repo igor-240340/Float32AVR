@@ -1287,12 +1287,12 @@ FTOAE:      PUSH MAXLEN                 ; Back up MAXLEN.
             POP A3                      ; Is the biased exponent in [1,126]?
             BRMI NORMLFT                ; Yes, this means the true exponent is in the range [-126,-1], which means NUM<1 and INT(NUM)=0 - normalize to the left.
 
-NORMRGHT:   PUSH A3                     ; Нет, NUM>=1, значит NUM либо уже нормализован, либо денормализован влево (тогда нормализуем вправо).
-            PUSH A2                     ; Бэкапим текущее значение NUM.
-            PUSH A1                     ; Возможно, что оно уже нормализовано.
+NORMRGHT:   PUSH A3                     ; No, NUM>=1, this means NUM is either already normalized, or denormalized to the left (in that case, normalize to the right).
+            PUSH A2                     ; Backup the current value of NUM. NOTE: It may already be normalized.
+            PUSH A1                     ;
             PUSH A0                     ;
 
-            LDI R16,TEN0                ; B=10.0F.
+            LDI R16,TEN0                ; B=10.0f.
             LDI R17,TEN1                ;
             LDI R18,TEN2                ;
             LDI R19,TEN3                ;
@@ -1302,28 +1302,28 @@ NORMRGHT:   PUSH A3                     ; Нет, NUM>=1, значит NUM ли�
             MOV B3,R19                  ;
 
             PUSH EXP                    ;
-            CALL FDIV32                 ; A=NUM=FDIV32(NUM,10.0F).
+            CALL FDIV32                 ; A=NUM=FDIV32(NUM,10.0f).
             POP EXP                     ;
 
-            PUSH A3                     ; Бэкапим старшие два байта NUM.
+            PUSH A3                     ; Back up the higher two bytes of NUM.
             PUSH A2                     ;
-            ROL A2                      ; Распаковываем экспоненту NUM.
+            ROL A2                      ; Unpack the exponent of NUM.
             ROL A3                      ;
             LDI R16,-127                ;
             ADD R16,A3                  ;
-            POP A2                      ; Восстанавливаем старший байт NUM, искаженный извлечением экспоненты.
-            POP A3                      ; Экспонента в коде со смещением лежит в [1,126]?
-            BRMI RESTNORM               ; Да, значит истинная экспонента лежит в [-126,-1], а это значит, что NUM<1 и предыдущее значение до деления на 10 уже было нормализованным.
+            POP A2                      ; Restore the higher byte of NUM, modified by the extraction of the exponent.
+            POP A3                      ; Is the biased exponent in the range [1,126]?
+            BRMI RESTNORM               ; Yes, this means the true exponent is in [-126,-1], implying that NUM<1, and the previous value before division by 10 was already normalized.
             
-            INC EXP                     ; Нет, NUM>=1, значит предыдущее значение не было нормализованным. Запоминаем очередное понижение порядка NUM.
+            INC EXP                     ; No, NUM>=1, so the previous value was not normalized. Remember the decrease in the decimal order of NUM.
 
-            POP R16                     ; Удаляем предыдущее значение NUM.
+            POP R16                     ; Remove the previous value of NUM.
             POP R16                     ;
             POP R16                     ;
             POP R16                     ;
             RJMP NORMRGHT               ;
 
-RESTNORM:   POP A0                      ; Восстанавливаем последнее значение NUM, которое уже нормализовано.
+RESTNORM:   POP A0                      ; Restore the last value of NUM, which is already normalized.
             POP A1                      ;
             POP A2                      ;
             POP A3                      ;
@@ -1333,10 +1333,10 @@ NORMLFT:    CLR R16                     ;
             OR R16,A0                   ;
             OR R16,A1                   ;
             OR R16,A2                   ;
-            OR R16,A3                   ; NUM=0.0F?
-            BREQ CONVMANT               ; Да, NUM=0.0F - FTOAN обработает ноль корректно и вернет строку с символом нуля. EXP тоже остаётся равен нулю. 
+            OR R16,A3                   ; NUM=0.0f?
+            BREQ CONVMANT               ; Да, NUM=0.0f - FTOAN обработает ноль корректно и вернет строку с символом нуля. EXP тоже остаётся равен нулю. 
 
-            LDI R16,TEN0                ; B=10.0F.
+            LDI R16,TEN0                ; B=10.0f.
             LDI R17,TEN1                ;
             LDI R18,TEN2                ;
             LDI R19,TEN3                ;
@@ -1346,7 +1346,7 @@ NORMLFT:    CLR R16                     ;
             MOV B3,R19                  ;
 
             PUSH EXP                    ;
-            CALL FMUL32                 ; A=NUM=FMUL32(NUM,10.0F).
+            CALL FMUL32                 ; A=NUM=FMUL32(NUM,10.0f).
             POP EXP                     ;
             INC EXP                     ; EXP++.
 
