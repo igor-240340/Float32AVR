@@ -1284,8 +1284,8 @@ FTOAE:      PUSH MAXLEN                 ; Back up MAXLEN.
             LDI R16,-127                ;
             ADD R16,A3                  ;
             POP A2                      ; Restore the higher two bytes of NUM, replacing those that were modified during the unpacking of the exponent.
-            POP A3                      ; Is the biased exponent in [1,126]?
-            BRMI NORMLFT                ; Yes, this means the true exponent is in the range [-126,-1], which means NUM<1 and INT(NUM)=0 - normalize to the left.
+            POP A3                      ; Is the biased exponent in [1,126] or exponent field is zero?
+            BRMI NORMLFT                ; Yes, this means either the true exponent is in the range [-126,-1], which means NUM<1 and INT(NUM)=0, or NUM is zero. In both cases proceed to normalizing to the left.
 
 NORMRGHT:   PUSH A3                     ; No, NUM>=1, this means NUM is either already normalized, or denormalized to the left (in that case, normalize to the right).
             PUSH A2                     ; Backup the current value of NUM. NOTE: It may already be normalized.
@@ -1334,7 +1334,7 @@ NORMLFT:    CLR R16                     ;
             OR R16,A1                   ;
             OR R16,A2                   ;
             OR R16,A3                   ; NUM=0.0f?
-            BREQ CONVMANT               ; Да, NUM=0.0f - FTOAN обработает ноль корректно и вернет строку с символом нуля. EXP тоже остаётся равен нулю. 
+            BREQ CONVMANT               ; Yes, NUM=0.0f - FTOAN will handle zero correctly and return a string with the zero character. EXP also remains zero.
 
             LDI R16,TEN0                ; B=10.0f.
             LDI R17,TEN1                ;
@@ -1350,17 +1350,17 @@ NORMLFT:    CLR R16                     ;
             POP EXP                     ;
             INC EXP                     ; EXP++.
 
-            PUSH A3                     ;
+            PUSH A3                     ; Back up the higher two bytes of NUM.
             PUSH A2                     ;
-            ROL A2                      ;
+            ROL A2                      ; Unpack the exponent of NUM.
             ROL A3                      ;
             LDI R16,-127                ;
             ADD R16,A3                  ;
-            POP A2                      ; Восстанавливаем NUM.
+            POP A2                      ; Restore NUM.
             POP A3                      ; NUM>=1?
-            BRMI NORMLFT                ; Нет, продолжаем нормализацию.
+            BRMI NORMLFT                ; No, continue normalization.
 
-            LDI R16,0b10000000          ; EXP=-EXP. Представляем отрицательную экспоненту в прямом коде.
+            LDI R16,0b10000000          ; EXP=-EXP. Represent the negative exponent in sign-magnitude format.
             OR EXP,R16                  ;
 
             ;
