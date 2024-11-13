@@ -1364,21 +1364,21 @@ NORMLFT:    CLR R16                     ;
             OR EXP,R16                  ;
 
             ;
-            ; Конвертация десятичной мантиссы в строку.
+            ; Convert the decimal mantissa to a string.
             ;
-            ; NOTE: Мы нормализовали NUM (если он не был нормализован изначально) и это значение представляет теперь
-            ; мантиссу в десятичной экспоненциальной записи.
-CONVMANT:   POP MAXLEN                  ; Извлекаем аргумент MAXLEN.
+            ; NOTE: We normalized NUM (if it wasn't initially normalized), and this value now represents
+            ; the mantissa in decimal exponential notation.
+CONVMANT:   POP MAXLEN                  ; Restore MAXLEN.
 
             AND EXP,EXP                 ; EXP=0?
-            BREQ CHKSGN                 ; Да, число NUM уже нормализовано, экспоненциальная форма не требуется.
+            BREQ CHKSGN                 ; Yes, the true value of NUM is already normalized; exponential form is not required.
 
-            LDI R16,-4                  ; Нет, резервируем в строке 4 места под экспоненту: E{+|-}00.
+            LDI R16,-4                  ; No, reserve 4 characters in the string for the exponent: E{+|-}00.
             ADD MAXLEN,R16              ; MAXLEN=MAXLEN-4.
 
-CHKSGN:     LDI R16,0b10000000          ; Маска знака.
+CHKSGN:     LDI R16,0b10000000          ; Sign mask.
             AND R16,A3                  ; NUM<0?
-            BRNE NUMNEG                 ; Да, резервируем в выходной строке один символ под '-'.
+            BRNE NUMNEG                 ; Yes, reserve one character in the output string for '-'.
             
             LDI R16,-2                  ; Нет, резервируем только два места под цифру целой части и точку.
             ADD MAXLEN,R16              ; MAXLEN=MAXLEN-2.
