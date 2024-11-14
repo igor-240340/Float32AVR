@@ -1380,39 +1380,39 @@ CHKSGN:     LDI R16,0b10000000          ; Sign mask.
             AND R16,A3                  ; NUM<0?
             BRNE NUMNEG                 ; Yes, reserve one character in the output string for '-'.
             
-            LDI R16,-2                  ; Нет, резервируем только два места под цифру целой части и точку.
+            LDI R16,-2                  ; No, reserve only two characters for the integer digit and the decimal point.
             ADD MAXLEN,R16              ; MAXLEN=MAXLEN-2.
             RJMP CALLFTOAN              ;
 
-NUMNEG:     LDI R16,-2-1                ; Два места под цифру целой части и точку и еще одно место - под символ минуса '-'.
+NUMNEG:     LDI R16,-2-1                ; Reserve two characters for the integer digit and the decimal point, plus one more character for the '-' sign.
             ADD MAXLEN,R16              ; MAXLEN=(MAXLEN-2)-1.
 
 CALLFTOAN:  PUSH EXP                    ;
-            CALL FTOAN                  ; STR=FTOAN(NUM,MAXLEN). MAXLEN после вычислений фактически содержит PRECISION,
-            POP EXP                     ; Который гарантирует, что не будет превышения исходного значения MAXLEN.
+            CALL FTOAN                  ; STR=FTOAN(NUM,MAXLEN). After calculations, MAXLEN effectively holds PRECISION,
+            POP EXP                     ; which ensures that the initial MAXLEN value will not be exceeded.
 
             AND EXP,EXP                 ; EXP=0?
-            BREQ EXITFTOAE              ; Да, выходим.
+            BREQ EXITFTOAE              ; Yes, exit.
 
-            LDI R16,'E'                 ; Нет, формируем экспоненциальную запись.
+            LDI R16,'E'                 ; No, append the exponent after the string.
             ST X+,R16                   ; STR+='E'.
 
-            ROL EXP                     ; EXP<0? (Отрицательная экспонента представлена в прямом коде).
-            BRCC SETPLUS                ; Нет, EXP>0, устанавливаем знак '+'.
-            LDI R16,'-'                 ; Да, устанавливаем знак '-'.
+            ROL EXP                     ; EXP<0? NOTE: The negative exponent is represented in sign-magnitude format.
+            BRCC SETPLUS                ; No, EXP>0, set '+'.
+            LDI R16,'-'                 ; Yes, set '-'.
             ST X+,R16                   ;
             RJMP EXPTOSTR               ;
 SETPLUS:    LDI R16,'+'                 ;
             ST X+,R16                   ;
 
             ;
-            ; Конвертация экспоненты в строку.
+            ; Convert the exponent to a string.
             ;
-            ; Если экспонента не равна нулю, то модуль экспоненты лежит в [1,38].
-            ; Это значит, что неполное частное от деления на 10 не превышает 3 (0b00000011).
-            ; А остаток по определению меньше делителя и лежит в [0,9].
-            ; Таким образом, после деления экспоненты на 10 неполное частное содержит старшую десятичную цифру экспоненты,
-            ; а остаток - младшую.
+            ; If the exponent is non-zero, then the absolute value of the exponent lies in the range [1,38].
+            ; This means that the incomplete quotient from division by 10 does not exceed 3 (0b00000011).
+            ; The remainder, by definition, is less than the divisor and lies in the range [0,9].
+            ; Thus, after dividing the exponent by 10, the quotient contains the most significant decimal digit of the exponent,
+            ; and the remainder contains the least significant decimal digit.
 EXPTOSTR:   CLC                         ; EXP=|EXP|.
             ROR EXP                     ;
 
