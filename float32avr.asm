@@ -1416,21 +1416,21 @@ SETPLUS:    LDI R16,'+'                 ;
 EXPTOSTR:   CLC                         ; EXP=|EXP|.
             ROR EXP                     ;
 
-            LDI R18,2                   ; Поскольку частное не больше 3, то количество проверяемых двоичных цифр равно двум.
+            LDI R18,2                   ; Since the quotient does not exceed 3, the number of binary digits to check is two.
 
-            CLR R17                     ; Здесь формируются цифры частного.
+            CLR R17                     ; The digits of the quotient are formed here.
 
-            LDI R16,-(10*2)             ; Q[i]=2=0b00000010. Сразу формируем в доп. коде.
-REPEAT:     ADD EXP,R16                 ; EXP-(10*Q[I])>=0?
-            BRPL SET1                   ; Да, цифра частного Q[i] равна единице.
-            RJMP SET0                   ; Нет, цифра Q[i] равна нулю.
+            LDI R16,-(10*2)             ; Q[i]=2=0b00000010. Form immediately in two's complement.
+REPEAT:     ADD EXP,R16                 ; EXP-(10*Q[i])>=0?
+            BRPL SET1                   ; Yes, the quotient digit Q[i] equals one.
+            RJMP SET0                   ; No, the digit Q[i] equals zero.
 
-SET1:       SEC                         ; Устанавливаем текущий разряд частного в 1.
+SET1:       SEC                         ; Set the current digit of the quotient to 1.
             ROL R17                     ;
 
-            DEC R18                     ; Определены обе двоичные цифры частного?
-            BREQ SETDECDIG              ; Да, частное содержит старшую десятичную цифру экспонента, а EXP - младшую.
-            LDI R16,-(10*1)             ; Нет, определяем младшую цифру частного.
+            DEC R18                     ; Are both binary digits of the quotient determined?
+            BREQ SETDECDIG              ; Yes, the quotient contains the value corresponding to the most significant decimal digit of the exponent, while EXP holds the remainder, corresponding to the least significant digit.
+            LDI R16,-(10*1)             ; No, determine the least significant binary digit of the quotient.
             RJMP REPEAT                 ; Q[i]=1=0b00000001.
 
 SET0:       CLC                         ; Устанавливаем текущий разряд частного в 0.
