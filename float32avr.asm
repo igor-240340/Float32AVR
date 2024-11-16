@@ -1433,27 +1433,27 @@ SET1:       SEC                         ; Set the current digit of the quotient 
             LDI R16,-(10*1)             ; No, determine the least significant binary digit of the quotient.
             RJMP REPEAT                 ; Q[i]=1=0b00000001.
 
-SET0:       CLC                         ; Устанавливаем текущий разряд частного в 0.
+SET0:       CLC                         ; Set the current bit of the quotient to 0.
             ROL R17                     ;
 
-            DEC R18                     ; Определены обе двоичные цифры частного?
-            BREQ RESTREM                ; Да, частное содержит старшую десятичную цифру экспонента, а EXP после восстановления остатка - младшую.
-            LDI R16,10                  ; Нет, определяем младшую цифру частного.
-            RJMP REPEAT                 ; Новый остаток вычисляется без восстановления: (EXP+20)-10=EXP+10.
+            DEC R18                     ; Are both binary digits of the quotient determined?
+            BREQ RESTREM                ; Yes, the quotient contains the value corresponding to the most significant decimal digit of the exponent, while EXP will hold the remainder (after restoring), corresponding to the least significant digit.
+            LDI R16,10                  ; No, determine the least significant binary digit of the quotient.
+            RJMP REPEAT                 ; The new remainder is calculated without restoring: (EXP+20)-10=EXP+10.
             
-RESTREM:    LDI R16,10                  ; Восстанавливаем последний положительный остаток.
+RESTREM:    LDI R16,10                  ; Restore the last non-negative remainder.
             ADD EXP,R16                 ;
 
 SETDECDIG:  LDI R16,0x30                ; R16='0'.
 
-            OR R17,R16                  ; Формируем ASCII-код старшей десятичной цифры экспоненты.
-            ST X+,R17                   ; Добавляем в строку.
+            OR R17,R16                  ; Form the ASCII code of the most significant decimal digit of the exponent.
+            ST X+,R17                   ; Append to the string.
             
-            OR EXP,R16                  ; Формируем ASCII-код младшей десятичной цифры экспоненты.
-            ST X+,EXP                   ; Добавляем в строку.
+            OR EXP,R16                  ; Form the ASCII code of the least significant decimal digit of the exponent.
+            ST X+,EXP                   ; Append to the string.
 
             LDI R16,0                   ; R16='\0'.
-            ST X,R16                    ; Добавляем конец строки.
+            ST X,R16                    ; Append the end of the line.
 
 EXITFTOAE:  RET
 
