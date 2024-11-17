@@ -1458,18 +1458,18 @@ SETDECDIG:  LDI R16,0x30                ; R16='0'.
 EXITFTOAE:  RET
 
 ;
-; Преобразует ASCII-строку с десятичной дробью в бинарный float.
+; Converts an ASCII string containing a decimal fraction into a binary float.
 ;
-; В основе лежит наивный алгоритм из [Kernighan & Ritchie, The C Programming Language],
-; который в общем случае даёт не лучшее двоичное приближение к входному десятичному числу.
+; Based on the naive algorithm from [Kernighan & Ritchie, The C Programming Language],
+; which generally does not provide the best binary approximation for the input decimal number.
 ;
-; Основная идея та же, что и для FTOA - мы просто игнорируем тот факт, что десятичное представление
-; исходной двоичной дроби искажается при её масштабировании и умножаем двоичную дробь на 10 так,
-; словно мы непосредственно умножаем её десятичное представление, игнорируя искажения некоторых разрядов
-; нового десятичного представления отмасштабированной двоичной дроби.
+; The main idea is the same as for FTOA - we simply ignore the fact that the decimal representation
+; of the initial binary fraction gets distorted during scaling and multiply the binary fraction by 10
+; as if we were directly multiplying its decimal representation, disregarding distortions in certain
+; digits of the new decimal representation of the scaled binary fraction.
 ;
-; NOTE: Поскольку в текущей реализации нет поддержки отрицательного нуля, то при получении на вход
-; строки "-0" происходит формирование положительного нуля.
+; NOTE: Since the current implementation does not support negative zero,
+; an input string "-0" results in positive zero.
 ;
 ; NOTE: Исключение при делении на ноль здесь невозможно.
 ; А переполнение может произойти только в следующих случаях:
