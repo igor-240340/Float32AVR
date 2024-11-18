@@ -1471,22 +1471,22 @@ EXITFTOAE:  RET
 ; NOTE: Since the current implementation does not support negative zero,
 ; an input string "-0" results in positive zero.
 ;
-; NOTE: Исключение при делении на ноль здесь невозможно.
-; А переполнение может произойти только в следующих случаях:
-;   - Переполнение NUM в FMUL32 при обработке целой части.
-;   - Переполнение NUM в FMUL32 при обработке дробной части.
-;   - Переполнение OVERSCALE в FMUL32 при обработке дробной части.
+; NOTE: Division by zero exception is not possible here.
+; Overflow can only occur in the following cases:
+;   - Overflow of NUM in FMUL32 during the processing of the integer part.
+;   - Overflow of NUM in FMUL32 during the processing of the fractional part.
+;   - Overflow of OVERSCALE in FMUL32 during the processing of the fractional part.
 ; 
-; Переполнение NUM в FADD32 при обработке целой части не может произойти.
+; Overflow of NUM in FADD32 during the processing of the integer part cannot occur.
 ;
-; Доказательство:
-; допустим, что это не так, тогда существует такое целое число, которое не даёт переполнения
-; при масштабировании, когда мы извлекаем последний разряд - разряд единиц, но при этом даёт переполнение
-; при прибавлении этого разряда к отмасштабированному NUM.
+; Proof:
+; Assume this is not the case. Then there exists an integer that does not cause overflow
+; during scaling when extracting the last digit (the ones place), but causes overflow
+; when adding this digit to the scaled NUM.
 ;
 ; Еще заметим, что максимальный порядок входной числовой строки - 10^38.
 ; То есть, любые числа, количество цифр в записи которых превышает 39, будут давать переполнение,
-; Поэтому они сразу исключаются из рассмотрения.
+; поэтому они сразу исключаются из рассмотрения.
 ; 
 ; Возьмем теперь значение 340282430000000000000000000000000000000, оно даёт переполнение в FMUL32
 ; уже при анализе самого младшего разряда. Следовательно, интересующее нас значение (если оно существует)
