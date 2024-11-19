@@ -1484,21 +1484,21 @@ EXITFTOAE:  RET
 ; during scaling when extracting the last digit (the ones place), but causes overflow
 ; when adding this digit to the scaled NUM.
 ;
-; Еще заметим, что максимальный порядок входной числовой строки - 10^38.
-; То есть, любые числа, количество цифр в записи которых превышает 39, будут давать переполнение,
-; поэтому они сразу исключаются из рассмотрения.
+; Note also that the maximum order of the input numeric string is 10^38.
+; That is, any numbers with more than 39 digits in their representation will cause overflow
+; and are therefore immediately excluded from consideration.
 ; 
-; Возьмем теперь значение 340282430000000000000000000000000000000, оно даёт переполнение в FMUL32
-; уже при анализе самого младшего разряда. Следовательно, интересующее нас значение (если оно существует)
-; меньше данного.
-; Возьмем теперь значение на единицу меньше - 340282429999999999999999999999999999999.
-; Оно не дает переполнения в FMUL32, но оно не даёт переполнения и в FADD32, когда мы прибавляем цифру из
-; разряда единиц после масштабирования NUM (и прибавляем мы маскимальное значение - 9).
-; Следовательно, если значение, которое даёт переполнение только в FADD32, существует, то
-; оно явно должно быть меньше первого (чтобы не давать переполнения в FMUL32), но при этом
-; оно должно быть больше второго (чтобы давать переполнение при прибавлении числа из разряда единиц).
-; Но между 340282429999999999999999999999999999999 и 340282430000000000000000000000000000000
-; не существует других целых чисел, т.е. такого значения попросту не существует.
+; Now consider the value 340282430000000000000000000000000000000, which causes overflow in FMUL32
+; even during the analysis of the least significant digit. Therefore, the value we are interested in (if it exists)
+; is less than this one.
+; Now consider the value one less than the previous one - 340282429999999999999999999999999999999.
+; It does not cause overflow in FMUL32, nor does it cause overflow in FADD32, when adding the digit
+; from the units place after scaling NUM (and we add the maximum value - 9).
+; Therefore, if a value that causes overflow only in FADD32 exists,
+; it must be less than the first value (to avoid overflow in FMUL32),
+; yet greater than the second value (to cause overflow when adding the digit from the units place).
+; However, there are no other integers between 340282429999999999999999999999999999999 and 340282430000000000000000000000000000000,
+; meaning such a value simply does not exist (for any fractional number between the mentioned ones we get overflow in FMUL32).
 ; 
 ; Переполнение NUM в FADD32 при обработке дробной части не может произойти по тем же соображениям:
 ; достаточно заметить, что количество цифр в дробной части не должно превышать 38, чтобы
