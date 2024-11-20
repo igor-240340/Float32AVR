@@ -1500,18 +1500,18 @@ EXITFTOAE:  RET
 ; However, there are no other integers between 340282429999999999999999999999999999999 and 340282430000000000000000000000000000000,
 ; meaning such a value simply does not exist (for any fractional number between the mentioned ones we get overflow in FMUL32).
 ; 
-; Переполнение NUM в FADD32 при обработке дробной части не может произойти по тем же соображениям:
-; достаточно заметить, что количество цифр в дробной части не должно превышать 38, чтобы
-; не было переполнения OVERSCALE и по аналогии начать рассмотрение с дроби 3.40282430000000000000000000000000000000.
-; Более детальные рассуждения относительно граничных входных значений десятичных числовых строк можно найти
-; в основной доке.
+; Overflow of NUM in FADD32 during fractional part processing cannot occur for the same reason.
+; First, note that the number of digits in the fractional part must not exceed 38 to avoid OVERSCALE overflow and
+; then start by considering the fraction 3.40282430000000000000000000000000000000.
+; More detailed reasoning about the boundary input values of decimal numeric strings
+; can be found in the main documentation.
 ;
-; Аргументы:
-;   - STR - указатель на ASCII-строку с нулём в конце, ожидается в XH:XL.
+; Input:
+;   - XH:XL: Pointer STR to an ASCII string with a null terminator.
 ; 
-; Результат:
-;   - NUM - число в формате плавающей точки, помещается в R11, R10, R9, R8.
-            .EQU ONE0=0x00              ; 1.0F.
+; Output:
+;   - R11, R10, R9, R8: Floating-point number NUM.
+            .EQU ONE0=0x00              ; 1.0f.
             .EQU ONE1=0x00              ;
             .EQU ONE2=0x80              ;
             .EQU ONE3=0x3F              ;
