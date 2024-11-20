@@ -1506,12 +1506,12 @@ EXITFTOAE:  RET
 ; Более детальные рассуждения относительно граничных входных значений десятичных числовых строк можно найти
 ; в основной доке.
 ;
-; Аргументы:
-;   - STR - указатель на ASCII-строку с нулём в конце, ожидается в XH:XL.
+; Вход:
+;   - XH:XL: Указатель STR на ASCII-строку с нулём в конце.
 ; 
-; Результат:
-;   - NUM - число в формате плавающей точки, помещается в R11, R10, R9, R8.
-            .EQU ONE0=0x00              ; 1.0F.
+; Выход:
+;   - R11, R10, R9, R8: Число NUM в формате плавающей точки.
+            .EQU ONE0=0x00              ; 1.0f.
             .EQU ONE1=0x00              ;
             .EQU ONE2=0x80              ;
             .EQU ONE3=0x3F              ;
@@ -1545,7 +1545,7 @@ FLOATERR0:  POP R16                     ; Выбрасываем из стека
             POP ZL                      ; В стеке остался только адрес возврата во внешнем коде после вызова ATOF.
             IJMP                        ; Передаём управление во внешний обработчик исключений.
 
-INITNUM:    CLR A0                      ; A=NUM=0.0F.
+INITNUM:    CLR A0                      ; A=NUM=0.0f.
             CLR A1                      ;
             CLR A2                      ;
             CLR A3                      ;
@@ -1573,7 +1573,7 @@ GETINT1:    LD R16,X+                   ; R16=DIGIT=*STR++.
             EOR R17,R16                 ; Прочитали точку?
             BREQ GETFRAC1               ; Да, переходим к дробной части.
                                         ; Нет, продолжаем формировать целую часть.
-            LDI R17,TEN0                ; B=10.0F
+            LDI R17,TEN0                ; B=10.0f
             LDI R18,TEN1                ;
             LDI R19,TEN2                ;
             LDI R20,TEN3                ;
@@ -1583,7 +1583,7 @@ GETINT1:    LD R16,X+                   ; R16=DIGIT=*STR++.
             MOV B3,R20                  ;
 
             PUSH R16                    ; Если это не первая цифра, значит порядок NUM выше, чем мы предположили.
-            CALL FMUL32                 ; A=NUM=FMUL32(NUM,10.0F).
+            CALL FMUL32                 ; A=NUM=FMUL32(NUM,10.0f).
             POP R16                     ;
 
             PUSH A3                     ; Бэкапим NUM.
@@ -1642,7 +1642,7 @@ DWNSCALE:   POP B0                      ; B=OVERSCALE.
 
             RJMP EXITATOF               ;
 
-GETFRAC1:   LDI R16,ONE3                ; OVERSCALE=1.0F.
+GETFRAC1:   LDI R16,ONE3                ; OVERSCALE=1.0f.
             LDI R17,ONE2                ;
             LDI R18,ONE1                ;
             LDI R19,ONE0                ;
@@ -1670,7 +1670,7 @@ GETFRAC2:   LD R16,X+                   ; R16=DIGIT=*STR++.
             AND R16,R16                 ; Прочитали конец строки?
             BREQ DWNSCALE               ; Да, восстанавливаем порядок NUM.
                                         ; Нет, продолжаем извлекать дробные разряды.
-            LDI R17,TEN0                ; B=10.0F.
+            LDI R17,TEN0                ; B=10.0f.
             LDI R18,TEN1                ;
             LDI R19,TEN2                ;
             LDI R20,TEN3                ;
@@ -1680,7 +1680,7 @@ GETFRAC2:   LD R16,X+                   ; R16=DIGIT=*STR++.
             MOV B3,R20                  ;
 
             PUSH R16                    ; Завышаем порядок NUM, чтобы текущая цифра представляла разряд единиц.
-            CALL FMUL32                 ; A=NUM=FMUL32(NUM,10.0F).
+            CALL FMUL32                 ; A=NUM=FMUL32(NUM,10.0f).
             POP R16                     ;
 
             POP TMP0                    ; TMP=OVERSCALE.
@@ -1700,7 +1700,7 @@ GETFRAC2:   LD R16,X+                   ; R16=DIGIT=*STR++.
             MOV A2,TMP2                 ;
             MOV A3,TMP3                 ;
 
-            LDI R16,TEN0                ; B=10.0F.
+            LDI R16,TEN0                ; B=10.0f.
             LDI R17,TEN1                ;
             LDI R18,TEN2                ;
             LDI R19,TEN3                ;
@@ -1710,7 +1710,7 @@ GETFRAC2:   LD R16,X+                   ; R16=DIGIT=*STR++.
             MOV B3,R19                  ; 
 
                                         ; Отслеживаем степень завышения истинного порядка NUM.
-            CALL FMUL32                 ; A=OVERSCALE=FMUL32(OVERSCALE,10.0F).
+            CALL FMUL32                 ; A=OVERSCALE=FMUL32(OVERSCALE,10.0f).
             MOV TMP0,A0                 ; TMP=A=OVERSCALE.
             MOV TMP1,A1                 ;
             MOV TMP2,A2                 ;
