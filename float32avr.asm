@@ -1516,53 +1516,53 @@ EXITFTOAE:  RET
             .EQU ONE2=0x80              ;
             .EQU ONE3=0x3F              ;
 
-            .DEF A0=R8                  ; Первый операнд любой арифметической операции: FDIV32,FMUL32,FADD32,FSUB32.
+            .DEF A0=R8                  ; The first operand of any arithmetic operation: FDIV32,FMUL32,FADD32,FSUB32.
             .DEF A1=R9                  ;
             .DEF A2=R10                 ;
             .DEF A3=R11                 ;
 
-            .DEF B0=R12                 ; Второй операнд любой арифметической операции: FDIV32,FMUL32,FADD32,FSUB32.
+            .DEF B0=R12                 ; The second operand of any arithmetic operation: FDIV32,FMUL32,FADD32,FSUB32.
             .DEF B1=R13                 ;
             .DEF B2=R14                 ;
             .DEF B3=R15                 ;
 
-            .DEF TMP0=R22               ; Может быть использован для временного хранения float32.
+            .DEF TMP0=R22               ; Can be used for temporary storage of a float32.
             .DEF TMP1=R23               ;
             .DEF TMP2=R24               ;
             .DEF TMP3=R25               ;
 
-ATOF:       PUSH ZL                     ; Бэкапим адрес обработчика исключений во внешнем коде,
-            PUSH ZH                     ; Поскольку сначала мы перехватываем исключение здесь, внутри ATOF.
+ATOF:       PUSH ZL                     ; Back up the exception handler address in external code,
+            PUSH ZH                     ; as we first intercept the exception here within ATOF.
 
-            LDI ZL,LOW(FLOATERR0)       ; Устанавливаем обработчик исключений для первого FMUL32.
+            LDI ZL,LOW(FLOATERR0)       ; Set the exception handler for the first call of FMUL32.
             LDI ZH,HIGH(FLOATERR0)      ;
             RJMP INITNUM                ;
-FLOATERR0:  POP R16                     ; Выбрасываем из стека адрес возврата.
+FLOATERR0:  POP R16                     ; Discard the return address.
             POP R16                     ;
-            POP R16                     ; Выбрасываем DIGIT.
-            POP R16                     ; Выбрасываем SIGN.
-            POP ZH                      ; Восстанавливаем адрес обработчика исключений во внешнем коде.
-            POP ZL                      ; В стеке остался только адрес возврата во внешнем коде после вызова ATOF.
-            IJMP                        ; Передаём управление во внешний обработчик исключений.
+            POP R16                     ; Discard DIGIT.
+            POP R16                     ; Discard SIGN.
+            POP ZH                      ; Restore the exception handler address in the external code.
+            POP ZL                      ; The stack now contains only the return address after the ATOF call in the external code.
+            IJMP                        ; Pass control to the external exception handler.
 
-INITNUM:    CLR A0                      ; A=NUM=0.0F.
+INITNUM:    CLR A0                      ; A=NUM=0.0f.
             CLR A1                      ;
             CLR A2                      ;
             CLR A3                      ;
 
             ;
-            ; Определение знака числа.
+            ; Determine the sign of the number.
             LD R16,X                    ;
             LDI R17,'-'                 ;
-            EOR R16,R17                 ; Первый символ числовой строки - минус?
-            BREQ MINUS                  ; Да, формируем отрицательный знак результата и пропускаем первый символ.
-            CLR R16                     ; Нет, знак NUM БУДЕТ положительным - MSB старшего байта NUM будет нулевым.
+            EOR R16,R17                 ; Is the first character of the numeric string a minus sign?
+            BREQ MINUS                  ; Yes, form the negative sign for the result and skip the first character.
+            CLR R16                     ; No, the sign of NUM will be positive - the MSB of the higher byte of NUM will be zero.
             PUSH R16                    ;
             RJMP GETINT1                ;
 
-MINUS:      LD R16,X+                   ; Пропускаем знак минуса и смещаемся к следующему символу.
-            LDI R16,0b10000000          ; MSB старшего байта NUM будет содержать единицу.
-            PUSH R16                    ; Сохраняем SIGN в стеке до конца вычислений.
+MINUS:      LD R16,X+                   ; Skip the minus sign and move to the next character.
+            LDI R16,0b10000000          ; The MSB of the higher byte of NUM will contain 1.
+            PUSH R16                    ; Save SIGN to the stack until the end of calculations.
 
             ;
             ; Формирование целой части.
