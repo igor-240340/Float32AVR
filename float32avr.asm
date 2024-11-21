@@ -1619,7 +1619,7 @@ EXITATOF:   CLR R16                     ;
             OR R16,A3                   ; Zero?
             BRNE SETSIGN                ; No, set the sign.
             POP R16                     ; Yes, discard the sign from the stack.
-            POP R16                     ; Discard the backed up external exception handler from the stack.
+            POP R16                     ; Discard the backed-up external exception handler from the stack.
             POP R16                     ;
             RET                         ; Return positive zero.
 
@@ -1628,7 +1628,7 @@ SETSIGN:    POP R16                     ; R16=SIGN.
 
             POP R16                     ; ATOF finished without exceptions, so the backed up address of the exception handler in the calling code
             POP R16                     ; is no longer needed. That's why we remove it from the stack.
-            RET                         ; Only the return address after the ATOF call remains in the stack.
+            RET                         ; Only the return address after the ATOF call remains on the stack.
 
             ;
             ; Handling the fractional part.
@@ -1637,12 +1637,12 @@ DWNSCALE:   POP B0                      ; B=OVERSCALE.
             POP B2                      ;
             POP B3                      ;
                                         
-                                        ; Восстанавливаем истинный порядок числа NUM после извлечения дробной части.
+                                        ; Restore the true order of the number NUM after extracting the fractional part.
             CALL FDIV32                 ; A=NUM=FDIV32(NUM,OVERSCALE).
 
             RJMP EXITATOF               ;
 
-GETFRAC1:   LDI R16,ONE3                ; OVERSCALE=1.0F.
+GETFRAC1:   LDI R16,ONE3                ; OVERSCALE=1.0f.
             LDI R17,ONE2                ;
             LDI R18,ONE1                ;
             LDI R19,ONE0                ;
@@ -1651,26 +1651,26 @@ GETFRAC1:   LDI R16,ONE3                ; OVERSCALE=1.0F.
             PUSH R18                    ;
             PUSH R19                    ;
 
-            LDI ZL,LOW(FLOATERR1)       ; Устанавливаем обработчик исключений для второго FMUL32, который масштабирует NUM.
-            LDI ZH,HIGH(FLOATERR1)      ; Этот же обработчик корректно сработает при переполнении на третьем FMUL32, Который масштабирует OVERSCALE.
+            LDI ZL,LOW(FLOATERR1)       ; Set the exception handler for the second FMUL32 call, which scales NUM.
+            LDI ZH,HIGH(FLOATERR1)      ; The same handler will correctly handle overflow during the third FMUL32 call, which increases OVERSCALE.
             RJMP GETFRAC2               ;
-FLOATERR1:  POP R16                     ; Выбрасываем адрес возврата.
+FLOATERR1:  POP R16                     ; Discard the return address.
             POP R16                     ;
-            POP R16                     ; Выбрасываем DIGIT.
-            POP R16                     ; Выбрасываем 4 байта константы 1.0f в формате float32 (в случае переполнения при масштабировании NUM - второй FMUL32)
-            POP R16                     ; Или 4 байта отмасштабированного с избытком NUM (в случае переполнения при масштабировании OVERSCALE - третий FMUL32).
-            POP R16                     ; NOTE: Конечно, можно сразу "спустить" указатель стека в нужное место, а не делать POP для каждого элемента. Но этот способ выбран для простоты и наглядности.
-            POP R16                     ;
-            POP R16                     ; Выбрасываем SIGN.
-            POP ZH                      ; Восстанавливаем адрес обработчика исключений во внешнем коде.
-            POP ZL                      ; В стеке остался только адрес возврата во внешнем коде после вызова ATOF.
-            IJMP                        ; Передаём управление во внешний обработчик исключений.
+            POP R16                     ; Discard DIGIT.
+            POP R16                     ; Discard 4 bytes of OVERSCALE (in case of overflow during the NUM scaling - the second FMUL32 call)
+            POP R16                     ; or discard 4 bytes of excessively scaled NUM (in case of overflow during OVERSCALE scaling - the third FMUL32 call).
+            POP R16                     ; NOTE: Of course, we could adjust the stack pointer directly to the desired position instead of performing a POP for each element.
+            POP R16                     ; But the main goal here is explicitness.
+            POP R16                     ; Discard SIGN.
+            POP ZH                      ; Restore the address of the exception handler in the external code.
+            POP ZL                      ; Only the return address after the ATOF call in the external code remains on the stack.
+            IJMP                        ; Pass control to the external exception handler.
 
 GETFRAC2:   LD R16,X+                   ; R16=DIGIT=*STR++.
-            AND R16,R16                 ; Прочитали конец строки?
-            BREQ DWNSCALE               ; Да, восстанавливаем порядок NUM.
-                                        ; Нет, продолжаем извлекать дробные разряды.
-            LDI R17,TEN0                ; B=10.0F.
+            AND R16,R16                 ; End of string reached?
+            BREQ DWNSCALE               ; Yes, restore the true order of NUM.
+                                        ; No, continue extracting fractional digits.
+            LDI R17,TEN0                ; B=10.0f.
             LDI R18,TEN1                ;
             LDI R19,TEN2                ;
             LDI R20,TEN3                ;
@@ -1679,8 +1679,8 @@ GETFRAC2:   LD R16,X+                   ; R16=DIGIT=*STR++.
             MOV B2,R19                  ;
             MOV B3,R20                  ;
 
-            PUSH R16                    ; Завышаем порядок NUM, чтобы текущая цифра представляла разряд единиц.
-            CALL FMUL32                 ; A=NUM=FMUL32(NUM,10.0F).
+            PUSH R16                    ; Increase the order of NUM so that the current digit represents the units place.
+            CALL FMUL32                 ; A=NUM=FMUL32(NUM,10.0f).
             POP R16                     ;
 
             POP TMP0                    ; TMP=OVERSCALE.
@@ -1688,19 +1688,19 @@ GETFRAC2:   LD R16,X+                   ; R16=DIGIT=*STR++.
             POP TMP2                    ;
             POP TMP3                    ;
 
-            PUSH A3                     ; Бэкапим NUM.
+            PUSH A3                     ; Backup NUM.
             PUSH A2                     ;
             PUSH A1                     ;
             PUSH A0                     ;
 
-            PUSH R16                    ; Бэкапим DIGIT.
+            PUSH R16                    ; Backup DIGIT.
 
             MOV A0,TMP0                 ; A=TMP=OVERSCALE.
             MOV A1,TMP1                 ;
             MOV A2,TMP2                 ;
             MOV A3,TMP3                 ;
 
-            LDI R16,TEN0                ; B=10.0F.
+            LDI R16,TEN0                ; B=10.0f.
             LDI R17,TEN1                ;
             LDI R18,TEN2                ;
             LDI R19,TEN3                ;
@@ -1709,8 +1709,8 @@ GETFRAC2:   LD R16,X+                   ; R16=DIGIT=*STR++.
             MOV B2,R18                  ;
             MOV B3,R19                  ; 
 
-                                        ; Отслеживаем степень завышения истинного порядка NUM.
-            CALL FMUL32                 ; A=OVERSCALE=FMUL32(OVERSCALE,10.0F).
+                                        ; Keep track of how much the true order of NUM is exceeded.
+            CALL FMUL32                 ; A=OVERSCALE=FMUL32(OVERSCALE,10.0f).
             MOV TMP0,A0                 ; TMP=A=OVERSCALE.
             MOV TMP1,A1                 ;
             MOV TMP2,A2                 ;
@@ -1723,17 +1723,17 @@ GETFRAC2:   LD R16,X+                   ; R16=DIGIT=*STR++.
             POP A2                      ;
             POP A3                      ;
 
-            PUSH TMP3                   ; Бэкапим OVERSCALE.
+            PUSH TMP3                   ; Backup OVERSCALE.
             PUSH TMP2                   ;
             PUSH TMP1                   ;
             PUSH TMP0                   ;
 
-            PUSH A3                     ; Бэкапим NUM.
+            PUSH A3                     ; Backup NUM.
             PUSH A2                     ;
             PUSH A1                     ;
             PUSH A0                     ;
 
-            LDI R17,0x0F                ; Извлекаем из ASCII-кода цифры обозначаемое ею число.
+            LDI R17,0x0F                ; Extract the numeric value represented by the ASCII code of the digit.
             AND R16,R17                 ; R16=DIGIT-0x30.
             MOV A0,R16                  ; R8=DIGIT.
             CALL ITOF                   ; A=FDIGIT=FLOAT(DIGIT).
