@@ -1565,15 +1565,15 @@ MINUS:      LD R16,X+                   ; Skip the minus sign and move to the ne
             PUSH R16                    ; Save SIGN to the stack until the end of calculations.
 
             ;
-            ; Формирование целой части.
+            ; Handling the integer part.
 GETINT1:    LD R16,X+                   ; R16=DIGIT=*STR++.
-            AND R16,R16                 ; Прочитали конец строки?
-            BREQ EXITATOF               ; Да, выходим.
-            LDI R17,0x2E                ; Нет.
-            EOR R17,R16                 ; Прочитали точку?
-            BREQ GETFRAC1               ; Да, переходим к дробной части.
-                                        ; Нет, продолжаем формировать целую часть.
-            LDI R17,TEN0                ; B=10.0F
+            AND R16,R16                 ; End of string reached?
+            BREQ EXITATOF               ; Yes, exit.
+            LDI R17,0x2E                ; No.
+            EOR R17,R16                 ; Decimal point reached?
+            BREQ GETFRAC1               ; Yes, proceed to the fractional part.
+                                        ; No, continue handling the integer part.
+            LDI R17,TEN0                ; B=10.0f
             LDI R18,TEN1                ;
             LDI R19,TEN2                ;
             LDI R20,TEN3                ;
@@ -1582,16 +1582,16 @@ GETINT1:    LD R16,X+                   ; R16=DIGIT=*STR++.
             MOV B2,R19                  ;
             MOV B3,R20                  ;
 
-            PUSH R16                    ; Если это не первая цифра, значит порядок NUM выше, чем мы предположили.
-            CALL FMUL32                 ; A=NUM=FMUL32(NUM,10.0F).
+            PUSH R16                    ; If this is not the first digit, the order of NUM is higher than initially assumed.
+            CALL FMUL32                 ; A=NUM=FMUL32(NUM,10.0f).
             POP R16                     ;
 
-            PUSH A3                     ; Бэкапим NUM.
+            PUSH A3                     ; Backup NUM.
             PUSH A2                     ;
             PUSH A1                     ;
             PUSH A0                     ;
 
-            LDI R17,0x0F                ; Извлекаем из ASCII кода цифры обозначаемое ею число.
+            LDI R17,0x0F                ; Extract the numeric value represented by the ASCII code of the digit.
             AND R16,R17                 ; R16=DIGIT-0x30.
             MOV A0,R16                  ; R8=DIGIT.
             CALL ITOF                   ; A=FDIGIT=FLOAT(DIGIT).
@@ -1605,33 +1605,33 @@ GETINT1:    LD R16,X+                   ; R16=DIGIT=*STR++.
             POP A2                      ;
             POP A3                      ;
 
-                                        ; Предполагаем, что прочитанная цифра последняя в целой части и т.о. представляет разряд единиц.
+                                        ; Assume the read digit is the last in the integer part and thus represents the units place.
             CALL FADD32                 ; A=NUM=NUM+FDIGIT.
 
             RJMP GETINT1
 
             ;
-            ; Выходим из ATOF.
+            ; Exit ATOF.
 EXITATOF:   CLR R16                     ;
             OR R16,A0                   ;
             OR R16,A1                   ;
             OR R16,A2                   ;
-            OR R16,A3                   ; Ноль?
-            BRNE SETSIGN                ; Нет, устанавливаем знак.
-            POP R16                     ; Да, удаляем знак из стека.
-            POP R16                     ; Удаляем адрес обработчика исключений.
+            OR R16,A3                   ; Zero?
+            BRNE SETSIGN                ; No, set the sign.
+            POP R16                     ; Yes, discard the sign from the stack.
+            POP R16                     ; Discard the backed up external exception handler from the stack.
             POP R16                     ;
-            RET                         ; Возвращаем положительный ноль.
+            RET                         ; Return positive zero.
 
 SETSIGN:    POP R16                     ; R16=SIGN.
-            EOR A3,R16                  ; Устанавливаем знак NUM.
+            EOR A3,R16                  ; Set the sign for NUM.
 
-            POP R16                     ; ATOF отработал без исключений.
-            POP R16                     ; Адрес обработчика исключений в вызывающем коде больше не нужен - удаляем его из стека.
-            RET                         ; В стеке остался только адрес возврата после ATOF.
+            POP R16                     ; ATOF finished without exceptions, so the backed up address of the exception handler in the calling code
+            POP R16                     ; is no longer needed. That's why we remove it from the stack.
+            RET                         ; Only the return address after the ATOF call remains in the stack.
 
             ;
-            ; Формирование дробной части.
+            ; Handling the fractional part.
 DWNSCALE:   POP B0                      ; B=OVERSCALE.
             POP B1                      ;
             POP B2                      ;
