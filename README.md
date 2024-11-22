@@ -48,4 +48,4 @@ An auxiliary repository with test examples is available [here](https://github.co
 ### FTOAE
 ![](docs/flowchart_ftoae.png)
 ### ATOF
-![](docs/flowchart_atof.png)
+![](docs/flowchart_atof_en.png)
