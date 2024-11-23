@@ -46,6 +46,6 @@ An auxiliary repository with test examples is available [here](https://github.co
 ### FTOAN
 ![](docs/flowchart_ftoan_en.png)
 ### FTOAE
-![](docs/flowchart_ftoae.png)
+![](docs/flowchart_ftoae_en.png)
 ### ATOF
 ![](docs/flowchart_atof_en.png)
