@@ -38,7 +38,7 @@ An auxiliary repository with test examples is available [here](https://github.co
 
 ## Flowcharts
 ### FADD32
-![](docs/flowchart_fadd.png)
+![](docs/flowchart_fadd_en.png)
 ### FMUL32
 ![](docs/flowchart_fmul.png)
 ### FDIV32
