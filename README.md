@@ -44,7 +44,7 @@ An auxiliary repository with test examples is available [here](https://github.co
 ### FDIV32
 ![](docs/flowchart_fdiv.png)
 ### FTOAN
-![](docs/flowchart_ftoan.png)
+![](docs/flowchart_ftoan_en.png)
 ### FTOAE
 ![](docs/flowchart_ftoae.png)
 ### ATOF
