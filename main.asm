@@ -1,13 +1,13 @@
             .INCLUDE <m328pdef.inc>
 
-            .EQU SP=RAMEND-(3*4+255)        ; Под стеком 3 переменных по 4 байта + ASCII-строка в 255 байт.
+            .EQU SP=RAMEND-(3*4+255)        ; Under the stack: 3 variables of 4 bytes each + a 255-byte ASCII string.
 
             .DSEG
             .ORG SP+1                       ;
-A:          .BYTE 4                         ; Операнд A.
-B:          .BYTE 4                         ; Операнд B.
-C:          .BYTE 4                         ; Результат C.
-NUMSTR:     .BYTE 255                       ; Указатель на ASCII-строку с числом в SRAM.
+A:          .BYTE 4                         ; Operand A.
+B:          .BYTE 4                         ; Operand B.
+C:          .BYTE 4                         ; Result C.
+NUMSTR:     .BYTE 255                       ; Pointer to the numeric ASCII string in SRAM.
 
             .CSEG
             .ORG 0x00
@@ -22,22 +22,22 @@ RESET:      LDI YL,LOW(SP)
             OUT SPH,YH
 
 ;===========================================================================================
-; Begin: проверка ATOF.
+; Begin: Test ATOF.
 ;===========================================================================================
-;            LDI ZL,LOW(NUMPRG << 1)         ; Отсюда, из памяти программ, будем читать числовую строку.
+;            LDI ZL,LOW(NUMPRG << 1)         ; From here, in the program memory, we will read the numeric string.
 ;            LDI ZH,HIGH(NUMPRG << 1)        ;
-;            LDI XL,LOW(NUMSTR)              ; Сюда, в SRAM, будем записывать прочитанную строку.
+;            LDI XL,LOW(NUMSTR)              ; Here, in SRAM, we will write the read string.
 ;            LDI XH,HIGH(NUMSTR)             ;
-;READNUM:    LPM R0,Z+                       ; Читаем байт из памяти программ.
-;            ST X+,R0                        ; Пишем его в SRAM по указателю STR.
-;            AND R0,R0                       ; Дочитали до NUL?
-;            BRNE READNUM                    ; Нет, продолжаем.
+;READNUM:    LPM R0,Z+                       ; Read a byte from program memory.
+;            ST X+,R0                        ; Write it to SRAM at the STR pointer.
+;            AND R0,R0                       ; Reached NUL?
+;            BRNE READNUM                    ; No, continue.
 ;===========================================================================================
-; End: проверка ATOF.
+; End: Test ATOF.
 ;===========================================================================================
 
-            LDI ZL,LOW(FLOATERR)            ; Записываем в Z адрес обработчика ошибок
-            LDI ZH,HIGH(FLOATERR)           ; Для библиотеки Float32AVR.
+            LDI ZL,LOW(FLOATERR)            ; Store in Z the address of the exception handler
+            LDI ZH,HIGH(FLOATERR)           ; for the Float32AVR library.
             
 MAIN:       
 
