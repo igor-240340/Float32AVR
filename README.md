@@ -40,7 +40,7 @@ An auxiliary repository with test examples is available [here](https://github.co
 ### FADD32
 ![](docs/flowchart_fadd_en.png)
 ### FMUL32
-![](docs/flowchart_fmul.png)
+![](docs/flowchart_fmul_en.png)
 ### FDIV32
 ![](docs/flowchart_fdiv.png)
 ### FTOAN
