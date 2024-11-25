@@ -1,42 +1,42 @@
 ﻿# Float32AVR
 
-## Overview
+## Обзор
 
-This library provides floating-point routines with single precision for AVR microcontrollers. It has been built entirely from the ground up, with all floating-point algorithms developed based on fundamental binary arithmetic principles.
+Это библиотека подпрограмм для эмуляции вычислений c числами в формате плавающей точки одинарной точности (float32). Все алгоритмы разработаны с нуля и формально обоснованы в сопуствующей документации.
 
-The main goal of this library is not for production use but rather for educational purposes, allowing users to understand and experiment with floating-point arithmetic. This library can be easily ported to any microcontroller.
+Библиотека разработана в первую очередь в образовательных целях, позволяя пользователям изучить фундаментальные основы вычислений с плавающей точкой.
 
-It is used in the "Hardware Calculator From Scratch" project, which can be found in [this](https://github.com/igor-240340/HardwareCalculatorFromScratch) repository.
+Эта библиотека используется в проекте "Hardware Calculator From Scratch", который находится [здесь](https://github.com/igor-240340/HardwareCalculatorFromScratch).
 
-## IEEE 754 Compliance
+## Совместимость с IEEE 754.
 
-- Only one rounding mode: to nearest/ties to even.
-- No subnormals: if underflows, it rounds to zero.
-- No special values: inf, nan.
-- Only positive zero.
+- Только один режим округления: к ближайшему/к четному.
+- Нет денормализованных чисел: в случае антипереполнения происходит сброс до нуля.
+- Нет спец. значений: inf, nan.
+- Только положительный ноль.
 
-## Research and Proofs
+## Ресерч и доказательства
 
-Some of the research notes can be found [here](https://drive.google.com/open?id=17ViZAw4rgcqFg06v3ZrvuvWtl1nly2Ic&usp=drive_fs).
+Некоторые заметки, появившиеся за время исследования, можно найти [здесь](https://drive.google.com/open?id=17ViZAw4rgcqFg06v3ZrvuvWtl1nly2Ic&usp=drive_fs).
 
-A formal proof for the division algorithm with an immovable divisor can be found [here](https://drive.google.com/open?id=10WZpMqTUmbDx7oKYT3m1wm0OJeUH0PQj&usp=drive_fs). (I couldn't find a good one, so I had to write it myself.)
+Формальное доказательство алгоритма деления с неподвижным делителем можно найти [здесь](https://drive.google.com/open?id=10WZpMqTUmbDx7oKYT3m1wm0OJeUH0PQj&usp=drive_fs).
 
-## Testing
+## Тесты
 
-An auxiliary repository with test examples is available [here](https://github.com/igor-240340/Float32AVRTest). Each test example in this library has a desktop equivalent in that repository. The primary goal is to ensure that our floating-point library produces the same results as hardware floating-point operations in a desktop environment (excluding behaviors for subnormals and inf/nan, which we do not support).
+Отдельный репозиторий с набором тестовых числовых значений находится [здесь](https://github.com/igor-240340/Float32AVRTest). Каждый пример в этой библиотеке имеет эквивалент в указанном репозитории. Основная цель - убедиться, что наша эмуляция плавающей точки дает на выходе те же результаты, что и аппаратная реализация на десктопном процессоре, которую мы берем за эталон (конечно, исключая поведение в случае денормализованных чисел и спец. значений, которые мы не реализуем).
 
-## Features
+## Возможности
 
-- **FADD32/FSUB32**: Addition/subtraction.
-- **FMUL32**: Multiplication.
-- **FDIV32**: Division.
-- **FTOAN**: Converts float to ASCII string (supports only normalized decimal numbers, uses a simple algorithm that does not generally provide the best approximation).
-- **FTOAE**: Converts float to ASCII string in exponential format (it depends on FTOAN).
-- **ATOF**: Converts ASCII string to float (uses a simple algorithm that does not generally provide the best approximation).
-- **FTOI**: Converts from float to int (intended for internal use by the library only, currently limited to integers with a size of 1 byte).
-- **ITOF**: Converts from int to float (intended for internal use by the library only, currently limited to integers with a size of 1 byte).
+- **FADD32/FSUB32**: Сложение/вычитание.
+- **FMUL32**: Умножение.
+- **FDIV32**: Деление.
+- **FTOAN**: Конвертирует float в ASCII-строку (поддерживает только десятичные нормализованные числа, использует простейший алгоритм, который в общем случае дает не самое лучшее двоичное приближение).
+- **FTOAE**: Конвертирует float в ASCII-строку в экспоненциальном формате (внутри использует FTOAN).
+- **ATOF**: Конвертирует ASCII-строку во float (использует простейший алгоритм, который в общем случае дает не самое лучшее двоичное приближение).
+- **FTOI**: Преобразует float в int (только для внутреннего использования, поддерживает только целые числа в пределах байта).
+- **ITOF**: Преобразует int во float (только для внутреннего использования, поддерживает только целые числа в пределах байта).
 
-## Flowcharts
+## Диаграммы
 ### FADD32
 ![](docs/flowchart_fadd.png)
 ### FMUL32
