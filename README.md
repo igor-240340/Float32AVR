@@ -1,4 +1,5 @@
 ﻿# Float32AVR
+Original russian version is located in [dev](https://github.com/igor-240340/Float32AVR/tree/dev) branch.
 
 ## Overview
 
