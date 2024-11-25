@@ -83,9 +83,12 @@
 ;
 ; Divides two numbers using a non-restoring division algorithm with a fixed divisor.
 ;
-; The dividend is expected in registers: R11, R10, R9, R8.
-; The divisor is expected in registers: R15, R14, R13, R12. 
-; The quotient is placed in the dividend's location: R11, R10, R9, R8.
+; Input:
+;   - R11, R10, R9, R8: The dividend.
+;   - R15, R14, R13, R12: The divisor.
+;
+; Output:
+;   - R11, R10, R9, R8: The quotient.
 FDIV32:     ;
             ; Operand filtering.
             CLR R16                     ;
@@ -364,9 +367,12 @@ PACK:       ROL Q0                      ; Shift the mantissa left, removing the 
 ; Multiplies two numbers using a fixed multiplier scheme.
 ; NOTE: We are considering the multiplication of the multiplier by the multiplicand, i.e., B*A.
 ;
-; The multiplicand is expected in registers: R11, R10, R9, R8.
-; The multiplier is expected in registers: R15, R14, R13, R12. 
-; The product is placed in the multiplicand's location: R11, R10, R9, R8.
+; Input:
+;   - R11, R10, R9, R8: The multiplicand.
+;   - R15, R14, R13, R12: The multiplier.
+;
+; Output:
+;   - R11, R10, R9, R8: The product.
 FMUL32:     ;
             ; Operand filtering.
             CLR R16                     ;
@@ -627,9 +633,12 @@ SETZERO:    CLR MANTA0
 ;
 ; Computes the difference between two numbers.
 ;
-; The minuend is expected in registers: R11, R10, R9, R8.
-; The subtrahend is expected in registers: R15, R14, R13, R12. 
-; The difference is stored in the place of the minuend: R11, R10, R9, R8.
+; Input:
+;   - R11, R10, R9, R8: The minuend.
+;   - R15, R14, R13, R12: The subtrahend.
+;
+; Output:
+;   - R11, R10, R9, R8: The difference.
 FSUB32:     LDI R16,0b10000000          ; B=-B.
             EOR B3,R16                  ;
             RJMP FADD32                 ;
@@ -637,9 +646,12 @@ FSUB32:     LDI R16,0b10000000          ; B=-B.
 ;
 ; Adds two numbers.
 ;
-; The first addend is expected in registers: R11, R10, R9, R8.
-; The second addend is expected in registers: R15, R14, R13, R12. 
-; The sum is stored in the place of the first addend: R11, R10, R9, R8.
+; Input:
+;   - R11, R10, R9, R8: The first addend.
+;   - R15, R14, R13, R12: The second addend.
+;
+; Output:
+;   - R11, R10, R9, R8: The sum.
 FADD32:     ;
             ; Swap.
             ; Set the largest (by absolute value) operand as the first.
