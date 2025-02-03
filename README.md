@@ -12,7 +12,7 @@ It is used in the "Hardware Calculator From Scratch" project, which can be found
 ## IEEE 754 Compliance
 
 - Only one rounding mode: to nearest/ties to even.
-- No subnormals: if underflows, it rounds to zero.
+- No subnormals: if underflows, it flushes to zero.
 - No special values: inf, nan.
 - Only positive zero.
 
