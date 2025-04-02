@@ -18,9 +18,9 @@ It is used in the "Hardware Calculator From Scratch" project, which can be found
 
 ## Research and Proofs
 
-Some of the research notes can be found [here](https://drive.google.com/open?id=17ViZAw4rgcqFg06v3ZrvuvWtl1nly2Ic&usp=drive_fs).
+There is a tutorial that explains all the theory behind "Hardware Calculator From Scratch" project in the whole which you can find in the corresponding repo specified above.
 
-A formal proof for the division algorithm with an immovable divisor can be found [here](https://drive.google.com/open?id=10WZpMqTUmbDx7oKYT3m1wm0OJeUH0PQj&usp=drive_fs). (I couldn't find a good one, so I had to write it myself.)
+A formal proof for the division algorithm with an immovable divisor can be found [here](docs/Деление%двоичных%целых%чисел.odt) (the tutorial contains less rigorous but more intuitive explanation).
 
 ## Testing
 
