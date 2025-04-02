@@ -20,7 +20,7 @@ It is used in the "Hardware Calculator From Scratch" project, which can be found
 
 There is a tutorial that explains all the theory behind "Hardware Calculator From Scratch" project in the whole which you can find in the corresponding repo specified above.
 
-A formal proof for the division algorithm with an immovable divisor can be found [here](docs/Деление%двоичных%целых%чисел.odt) (the tutorial contains less rigorous but more intuitive explanation).
+A formal proof for the division algorithm with an immovable divisor can be found [here](docs/Деление%20двоичных%20целых%20чисел.odt) (the tutorial contains less rigorous but more intuitive explanation).
 
 ## Testing
 
